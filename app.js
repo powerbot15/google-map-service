@@ -1,7 +1,9 @@
 var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
+    mongoose = require('mongoose'),
     nconf = require('nconf'),
+
     port;
 
 
@@ -16,7 +18,15 @@ app.use(express.static(__dirname + '/public'));
     console.dir(req);
 });*/
 
+mongoose.connect('mongodb://localhost/mapMarkers');
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function callback () {
+    console.log('DB connected');
+});
+
 port = nconf.get('port');
 app.listen(port, function(){
     console.log('Server started :' + port);
 });
+
