@@ -3,7 +3,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
     nconf = require('nconf'),
-
+    router = require('./router/routes'),
     port;
 
 
@@ -13,6 +13,7 @@ nconf.argv()
 
 app.use(bodyParser());
 app.use(express.static(__dirname + '/public'));
+router(app);
 
 /*app.get('*', function(req, res){
     console.dir(req);
