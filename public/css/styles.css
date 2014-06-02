@@ -1,0 +1,38 @@
+body{
+    background-image: url(../img/4324330.png);
+
+}
+.wrapper{
+    font-size: 0;
+    margin: auto;
+    max-width: 1024px;
+    min-width: 1024px;
+    border: 1px solid gray;
+    padding: 10px;
+    height: 768px;
+    background-color: #ffffff;
+}
+
+.wrapper > *{
+    font-size: 12pt;
+
+}
+
+.options{
+    width : 35%;
+    height: 100%;
+    display: inline-block;
+    vertical-align: top;
+}
+.tab-content{
+    border-left: 1px solid lightgray;
+    border-right: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+    height: 100%;
+    max-height: 700px;
+}
+.map-container{
+    width: 65%;
+    display: inline-block;
+    height: 100%;
+}

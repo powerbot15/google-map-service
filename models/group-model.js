@@ -6,4 +6,4 @@ MarkerGroupSchema = mongoose.Schema({
         user:String
     }
 );
-module.exports = mongoose.model('Marker', MarkerSchema);
+module.exports = mongoose.model('MarkerGroupSchema', MarkerGroupSchema);
