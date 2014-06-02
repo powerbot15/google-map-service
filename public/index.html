@@ -16,21 +16,48 @@
         <ul class="nav nav-tabs">
             <li class="active"><a href="#marker-groups" data-toggle="tab">Marker Groups</a></li>
             <li><a href="#markers" data-toggle="tab">Markers</a></li>
-            <li><a href="#new-marker" data-toggle="tab">Add marker</a></li>
         </ul>
 
         <!-- Tab panes -->
         <div class="tab-content">
+            <!--GROUPS-->
             <div class="tab-pane active" id="marker-groups">
-                <div class="add-new-group">
-
+                <div class="btn btn-primary btn-block btn-slide">
+                    <span class="glyphicon glyphicon-plus-sign"></span> New Group
+                </div>
+                <div class="slide hidden">
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="group-name" >Group name: </label>
+                            <input type="text" class="form-control" id="group-name" placeholder="Enter group name">
+                        </div>
+                        <span class="btn btn-default">Save</span>
+                    </form>
                 </div>
             </div>
+            <!--MARKERS-->
             <div class="tab-pane" id="markers">
-                asdf
-            </div>
-            <div class="tab-pane" id="new-marker">
-                asdf
+                <div class="btn btn-primary btn-block btn-slide">
+                    <span class="glyphicon glyphicon-plus-sign"></span> New Marker
+                </div>
+                <div class="slide hidden">
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="marker-description" >Marker description: </label>
+                            <input type="text" class="form-control" id="marker-description" placeholder="Enter marker description">
+                        </div>
+                        <div class="form-group">
+                            <label for="marker-latitude" >Marker latitude: </label>
+                            <input type="text" class="form-control" id="marker-latitude" placeholder="Click on the map to accept" disabled="disabled">
+                        </div>
+                        <div class="form-group">
+                            <label for="marker-longitude" >Marker longitude: </label>
+                            <input type="text" class="form-control" id="marker-longitude" placeholder="Click on the map to accept" disabled="disabled">
+                        </div>
+                        <span class="btn btn-default">Save</span>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
