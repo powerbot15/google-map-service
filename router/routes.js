@@ -11,5 +11,6 @@ module.exports = function router(app){
     app.post('/marker', markersController.saveMarker);
 
     app.post('/group', markersController.saveGroup);
+    app.put('/group/:id', markersController.updateGroup);
 
 };

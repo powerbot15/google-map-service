@@ -22,6 +22,22 @@
         <div class="tab-content">
             <!--GROUPS-->
             <div class="tab-pane active" id="marker-groups">
+                <div class="panel-group" id="accordion">
+                    <div class="panel panel-default hidden">
+                        <div class="panel-heading relative">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">
+                                    Group name
+                                </a>
+                                <span class="glyphicon glyphicon-minus-sign align-right"></span>
+                            </h4>
+                        </div>
+                        <div id="collapse1" class="panel-collapse collapse in">
+                            <div class="panel-body">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="btn btn-primary btn-block btn-slide">
                     <span class="glyphicon glyphicon-plus-sign"></span> New Group
                 </div>
@@ -31,12 +47,20 @@
                             <label for="group-name" >Group name: </label>
                             <input type="text" class="form-control" id="group-name" placeholder="Enter group name">
                         </div>
-                        <span class="btn btn-default">Save</span>
+                        <span class="btn btn-default" id="save-group">Save</span>
                     </form>
+                    <!--<div class="collection-container">-->
+                    <!--<ul class="collection">-->
+                    <!--<li class="collection-title"></li>-->
+                    <!--<li class="collection-title"></li>-->
+                    <!--</ul>-->
+                    <!--</div>-->
                 </div>
+
             </div>
             <!--MARKERS-->
             <div class="tab-pane" id="markers">
+
                 <div class="btn btn-primary btn-block btn-slide">
                     <span class="glyphicon glyphicon-plus-sign"></span> New Marker
                 </div>
@@ -54,7 +78,14 @@
                             <label for="marker-longitude" >Marker longitude: </label>
                             <input type="text" class="form-control" id="marker-longitude" placeholder="Click on the map to accept" disabled="disabled">
                         </div>
-                        <span class="btn btn-default">Save</span>
+                        <div class="form-group">
+                            <label for="marker-group" >Marker group: </label>
+                            <select name="groups" class="form-control" id="marker-group-items">
+                                <option class="group-item-default" value="none">none</option>
+                                <option class="group-item" value="cloneable">Cloneable</option>
+                            </select>
+                        </div>
+                        <span class="btn btn-success form-control" id="save-marker">Save</span>
                     </form>
                 </div>
 
@@ -70,9 +101,10 @@
 <script src="js/lib/bootstrap/dist/js/bootstrap.js"></script>
 <script src="js/lib/underscore/underscore.js"></script>
 <script src="js/lib/backbone/backbone.js"></script>
-<script src="js/eventsAndBehavior/behavior.js"></script>
-<script src="js/app.js"></script>
-
+<!--<script src="js/eventsAndBehavior/behavior.js"></script>-->
+<!--<script src="js/appConfigAndRun.js"></script>-->
+<!--<script data-main="js/appConfigAndRun.js" src="js/lib/requirejs/require.js"></script>-->
+<script src="js/controller/mainController.js"></script>
 </body>
 
 </html>

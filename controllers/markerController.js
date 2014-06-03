@@ -2,6 +2,7 @@
 
 var MarkersGroup = require('../models/group-model'),
     Marker = require('../models/marker-model.js'),
+    Promise = require('mpromise'),
     date;
 
 var MarkersController = function(){
@@ -11,9 +12,10 @@ var MarkersController = function(){
 
 MarkersController.saveGroup = function(request, response){
 
-    var newGroup = new Marker({
+    var newGroup = new MarkersGroup({
         name : request.param('name'),
-        id : undefined,
+        id : null,
+        markers: request.param('markers'),
         user:'anonymous'
     });
     newGroup.id = newGroup._id;
@@ -32,9 +34,23 @@ MarkersController.saveGroup = function(request, response){
     });
 
 };
+MarkersController.updateGroup = function(request, response){
+    console.log('request for group update id:' + request.param('id'));
+    MarkersGroup.update({id: request.param('id')}, { markers: request.param('markers') }, function(err, group){
+        if(err){
+            console.error(err);
+            response.status(501);
+            response.send('Did not saved');
+        }
+        if(group){
+            console.dir(group);
+            response.send(group);
+        }
+    });
 
+};
 MarkersController.uploadGroups = function(request, response){
-
+    console.log('request for groups');
     MarkersGroup.find({}, function(err, groups){
         if(err){
             console.error(err);
@@ -42,11 +58,25 @@ MarkersController.uploadGroups = function(request, response){
             response.send('Collection not found');
             return false;
         }
-        if(groups){
+        if(groups.length){
+//            groups
+//            for(var i = 0; i < groups.length; i++){
+//                findCollectionMarkers(groups[i]);
+//            }
             response.send(groups);
+            console.dir(groups);
         }
     });
+    function findCollectionMarkers(collection){
+        Marker.find({groupId : collection._id}, function(err, markers){
+            if(err){
+                return false;
+            }
+            collection.markers = markers;
+            console.dir(markers);
 
+        })
+    }
 };
 
 MarkersController.uploadSpecifiedGroup = function (request, response){
@@ -85,8 +115,9 @@ MarkersController.uploadSpecifiedGroup = function (request, response){
 
 MarkersController.uploadUngroupedMarkers = function(request, response){
 
+    console.log('request for ungrouped markers');
     Marker.find({
-        groupId : 'undefined'
+        groupId : null
     }, function(err, markers){
         if(err){
             console.error(err);
@@ -112,6 +143,10 @@ MarkersController.updateMarker = function(request, response){
 
 MarkersController.saveMarker = function(request, response){
 
+//    console.dir(request.param('longitude'));
+//    response.send('ok');
+//    return;
+
     var newMarker = new Marker({
         name : request.param('name'),
         description : request.param('description'),
@@ -129,7 +164,7 @@ MarkersController.saveMarker = function(request, response){
             return false;
         }
         if(marker){
-//            marker.id = marker._id;
+            marker.id = marker._id;
             response.send(marker);
         }
 
