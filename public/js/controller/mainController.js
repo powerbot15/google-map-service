@@ -13,9 +13,9 @@
         this.templateParent = $('#accordion');
         this.groupItemParent = $('#marker-group-items');
         this.groupItemTemplate = $('.group-item').eq(0).detach();
+
         this.downloadGroups();
         this.initializeMap();
-
         this.initializeEventsAndActions();
 
 //        this.downloadUngroupedMarkers();
@@ -51,6 +51,7 @@
                 console.dir(that);
 
                 that.renderGroups();
+                that.renderMarkersInGroups();
             })
             .error(function(err){
                 console.dir(err);
@@ -98,6 +99,7 @@
                         var groupElement;
                         console.dir(data);
                         dataSend = data;
+                        self.renderGroups();
 //                        self.groups.push(newGroup);
 //                        groupElement = self.groupTemplate.eq(0).clone();
 //                        groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)}).html(newGroup.name);
@@ -121,7 +123,10 @@
         newGroup.id = 0;
         newGroup.markers = [];
         for(var i = 0; i < self.groups.length; i++){
-
+            if(newGroup.name == self.groups[i].name){
+                alert('Such group already exists! Change the name please' );
+                return;
+            }
         }
         $.ajax({
             type: "POST",
@@ -137,11 +142,55 @@
                 groupElement = self.groupTemplate.eq(0).clone();
                 groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)}).html(newGroup.name);
                 groupElement.find('.panel-collapse').attr({id: 'collapse' + (self.groups.length-1)});
+                groupElement[0].group = newGroup;
                 self.templateParent.append(groupElement);
+                self.renderGroups();
             })
             .error(function(err){
                 console.dir(err);
             });
+
+    };
+
+
+    MainController.prototype.removeGroup = function(id){
+        var self = this;
+        $.ajax({
+            type: "DELETE",
+            url: "/group/" + id
+//            data: newGroup
+        })
+            .success(function(data) {
+//                that.markers = data;
+//                var groupElement;
+                console.dir("Group " + id + "deleted");
+                for(var i = 0; i < self.groups.length; i++){
+
+                    if(self.groups[i].id == id){
+                        var j = 0;
+                        while(j < self.googleMarkers.length){
+                            for(var k = 0; k < self.groups[i].markers.length; k++){
+                                if(self.googleMarkers[j].groupId == self.groups[i].markers[k].groupId){
+                                    self.googleMarkers[j].setMap(null);
+                                    self.googleMarkers.splice(j, 1);
+                                    j--;
+                                    break;
+                                }
+                            }
+                            j++;
+                        }
+                        self.groups.splice(i, 1);
+                        break;
+                    }
+
+                }
+                self.renderGroups();
+
+            })
+            .error(function(err){
+                console.dir(err);
+            });
+
 
     };
 
@@ -161,41 +210,74 @@
         newMarker.location.longitude = $('#marker-longitude')[0].value;
         newMarker.groupId = groupItemsSelect.options[groupItemsSelect.selectedIndex].value;
 
+        $.ajax({
+            type: "POST",
+            url: "/marker",
+            data: newMarker
+        })
+            .success(function(data) {
+                newMarker = data;
+                if(newMarker.groupId != 'cloneable'){
 
-        if(newMarker.groupId != 'cloneable'){
+                    for(var i = 0; i < self.groups.length; i++){
+                        if(newMarker.groupId == self.groups[i].id){
+                            if(!self.groups[i].markers){self.groups[i].markers = []}
+                            self.groups[i].markers.push(newMarker);
+                            self.updateGroup(self.groups[i].id);
+                            break;
+                        }
+                    }
 
-            for(var i = 0; i < self.groups.length; i++){
-                if(newMarker.groupId == self.groups[i].id){
-                    if(!self.groups[i].markers){self.groups[i].markers = []}
-                    self.groups[i].markers.push(newMarker);
-                    self.updateGroup(self.groups[i].id);
-                    break;
                 }
-            }
+                console.dir(newMarker);
+                var myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude),
+                    marker = new google.maps.Marker({
+                        position: myLatitudeLongitude,
+                        map: self.map,
+                        title:newMarker.description
+                    });
+                marker.groupId = newMarker.groupId;
+                marker.id = self.groups[i].markers[self.groups[i].markers.length - 1].id;
+                self.googleMarkers.push(marker);
+                console.dir(self.googleMarkers);
 
-        }
-        console.dir(newMarker);
-        var myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude),
-            marker = new google.maps.Marker({
-                position: myLatitudeLongitude,
-                map: self.map,
-                title:newMarker.description
+            })
+            .error(function(err){
+                console.dir(err);
             });
-        marker.groupId = newMarker.groupId;
-        self.googleMarkers.push(marker);
-        console.dir(self.googleMarkers);
 
     };
 
     MainController.prototype.renderGroups = function(){
         var groupElement,
-            groupItemElement;
+            groupItemElement,
+            markerTemplate,
+            markerTemplateInsert,
+            markerTemplateParent;
+
+        this.templateParent.empty();
+        this.groupItemParent.find('.group-item').remove();
+
         for(var i = 0; i < this.groups.length; i++){
+//            console.dir(this.groups[i].markers);
             groupElement = this.groupTemplate.eq(0).clone();
             groupElement.find('.panel-title>a').attr({href :'#collapse' + i}).html(this.groups[i].name);
             groupElement.find('.panel-collapse').attr({id: 'collapse' + i});
             groupElement[0].group = this.groups[i];
+
+            markerTemplate = groupElement.find('.marker').eq(0);
+            markerTemplate.remove();
+            markerTemplateParent = groupElement.find('.panel-body').eq(0);
+
+            for(var j = 0; j < this.groups[i].markers.length; j++){
+
+                markerTemplateInsert = markerTemplate.clone();
+                markerTemplateInsert.find('.description').html(this.groups[i].markers[j].description).marker = this.groups[i].markers[j];
+                markerTemplateParent.append(markerTemplateInsert);
+            }
+
             this.templateParent.append(groupElement);
+
 
             groupItemElement = this.groupItemTemplate.clone();
             groupItemElement[0].value = this.groups[i].id;
@@ -205,6 +287,28 @@
         }
         console.dir(this.groups);
         $('.collapse').collapse();
+    };
+    MainController.prototype.renderMarkersInGroups = function(){
+        var myLatitudeLongitude,
+            marker,
+            self = this;
+        for(var i = 0; i < self.groups.length; i++){
+
+            for(var j = 0; j < self.groups[i].markers.length; j++){
+
+                myLatitudeLongitude = new google.maps.LatLng( self.groups[i].markers[j].location.latitude, self.groups[i].markers[j].location.longitude);
+                marker = new google.maps.Marker({
+                    position: myLatitudeLongitude,
+                    map: self.map,
+                    title:self.groups[i].markers[j].description
+                });
+                marker.groupId = self.groups[i].markers[j].groupId;
+                self.googleMarkers.push(marker);
+
+            }
+
+        }
+
     };
 
     MainController.prototype.initializeEventsAndActions = function(){
@@ -218,6 +322,19 @@
             self.saveMarker();
         });
 
+        $('#marker-groups').on('click', '.remove-group', function(){
+            self.removeGroup($(this).closest('.panel-default')[0].group.id);
+
+        });
+        $('#marker-groups').on('click', '.panel-heading', function(){
+            $(this.parentNode).find('.panel-collapse').removeClass('hidden');
+
+        });
+        $('#marker-groups').on('click', '.animate-group-marker', function(){
+//            $(this.parentNode).find('.panel-collapse').removeClass('hidden');
+
+
+        });
         $('.btn-slide').on('click', function(event){
             var slideContent = $(this).parent().find('.slide');
             if(slideContent.hasClass('hidden')){
@@ -228,30 +345,16 @@
             }
         });
 
+        function toggleBounce(marker) {
 
-//        $('.collapse').collapse();
-
+            if (marker.getAnimation() != null) {
+                marker.setAnimation(null);
+            } else {
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+            }
+        }
     };
     var mainController = new MainController();
-
-//    var marker = new Marker;
-//    marker.set({description : 'sdds'});
-//    marker.set(
-//        {
-//            location: {
-//                longitude : 122,
-//                latitude : 22
-//            }
-//        });
-//
-//    console.dir(marker);
-//    marker.save();
-//    console.dir(marker);
-//    $('.active-edit').css('active-edit');
-
-
-//});
-
 
 })(jQuery);
 

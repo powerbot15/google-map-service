@@ -44,5 +44,16 @@ body{
 }
 .align-right{
     position:absolute;
-    right: 0;
+    right: 5px;
+    top:10%;
+}
+.remove-group, .remove-group-marker, .animate-group-marker{
+    cursor: pointer;
+}
+.marker{
+    margin: 3px 5px 3px 20px;
+    padding: 5px;
+    border-radius: 8px;
+    background-color: #F4C5C5;
+
 }

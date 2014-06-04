@@ -15,14 +15,14 @@ MarkersController.saveGroup = function(request, response){
     var newGroup = new MarkersGroup({
         name : request.param('name'),
         id : null,
-        markers: request.param('markers'),
+        markers: request.param('markers') || [],
         user:'anonymous'
     });
     newGroup.id = newGroup._id;
     newGroup.save(function(err, group){
         if(err){
             console.error(err);
-            response.status(501);
+            response.status(500);
             response.send('Did not saved');
             return false;
         }
@@ -34,12 +34,27 @@ MarkersController.saveGroup = function(request, response){
     });
 
 };
+
+MarkersController.removeGroup = function(request, response){
+    MarkersGroup.remove({id : request.param('id')}, function(err){
+        if(!err){
+            response.send({answer: 'ok'});
+        }
+        else{
+            response.send({answer: 'fail'});
+        }
+    });
+};
+
+
 MarkersController.updateGroup = function(request, response){
+
     console.log('request for group update id:' + request.param('id'));
-    MarkersGroup.update({id: request.param('id')}, { markers: request.param('markers') }, function(err, group){
+    console.dir(request.params);
+    MarkersGroup.findOneAndUpdate({id: request.param('id')}, { markers: request.param('markers') }, function(err, group){
         if(err){
             console.error(err);
-            response.status(501);
+            response.status(500);
             response.send('Did not saved');
         }
         if(group){
@@ -54,17 +69,12 @@ MarkersController.uploadGroups = function(request, response){
     MarkersGroup.find({}, function(err, groups){
         if(err){
             console.error(err);
-            response.status(501);
+            response.status(500);
             response.send('Collection not found');
             return false;
         }
         if(groups.length){
-//            groups
-//            for(var i = 0; i < groups.length; i++){
-//                findCollectionMarkers(groups[i]);
-//            }
             response.send(groups);
-            console.dir(groups);
         }
     });
     function findCollectionMarkers(collection){
@@ -88,7 +98,7 @@ MarkersController.uploadSpecifiedGroup = function (request, response){
 
         if(err){
             console.error(err);
-            response.status(501);
+            response.status(500);
             response.send('Collection not found');
             return false;
         }
@@ -97,7 +107,7 @@ MarkersController.uploadSpecifiedGroup = function (request, response){
             Marker.find({'groupId' : markerGroup.id}, function(err, markers){
                 if(err){
                     console.error(err);
-                    response.status(501);
+                    response.status(500);
                     response.send('Collection not found');
                     return false;
                 }
@@ -159,12 +169,12 @@ MarkersController.saveMarker = function(request, response){
     newMarker.save(function(err, marker){
         if(err){
             console.error(err);
-            response.status(501);
+            response.status(500);
             response.send('Did not saved');
             return false;
         }
         if(marker){
-            marker.id = marker._id;
+//            marker.id = marker._id;
             response.send(marker);
         }
 

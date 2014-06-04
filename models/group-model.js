@@ -1,10 +1,10 @@
 var mongoose = require('mongoose'),
-MarkerGroupSchema = mongoose.Schema({
+MarkerGroup = mongoose.Schema({
         name: String,
 //        description: String,
         id: String,
         user:String,
-        markers:String
+        markers:Array
     }
 );
-module.exports = mongoose.model('MarkerGroupSchema', MarkerGroupSchema);
+module.exports = mongoose.model('MarkerGroup', MarkerGroup);

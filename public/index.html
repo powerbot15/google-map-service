@@ -29,11 +29,18 @@
                                 <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">
                                     Group name
                                 </a>
-                                <span class="glyphicon glyphicon-minus-sign align-right"></span>
+                                <span class="glyphicon glyphicon-minus-sign align-right remove-group" title="Remove"></span>
                             </h4>
                         </div>
-                        <div id="collapse1" class="panel-collapse collapse in">
+                        <div id="collapse1" class="panel-collapse collapse in hidden">
                             <div class="panel-body">
+                                <div class="marker relative">
+                                    <span class="description"></span>
+                                    <span class="align-right">
+                                        <span class="glyphicon glyphicon-map-marker animate-group-marker" title="Show on the map"></span>
+                                        <span class="glyphicon glyphicon-minus-sign remove-group-marker" title="Remove"></span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -65,6 +72,8 @@
                     <span class="glyphicon glyphicon-plus-sign"></span> New Marker
                 </div>
                 <div class="slide hidden">
+                    div.ungrouped-markers
+                    <div class="marker"><span class="description"></span></div>
                     <form role="form">
                         <div class="form-group">
                             <label for="marker-description" >Marker description: </label>
