@@ -237,7 +237,7 @@
                         title:newMarker.description
                     });
                 marker.groupId = newMarker.groupId;
-                marker.id = self.groups[i].markers[self.groups[i].markers.length - 1].id;
+                marker.id = newMarker.id;
                 self.googleMarkers.push(marker);
                 console.dir(self.googleMarkers);
 
@@ -303,6 +303,7 @@
                     title:self.groups[i].markers[j].description
                 });
                 marker.groupId = self.groups[i].markers[j].groupId;
+                marker.id = self.groups[i].markers[j].id;
                 self.googleMarkers.push(marker);
 
             }
@@ -332,6 +333,17 @@
         });
         $('#marker-groups').on('click', '.animate-group-marker', function(){
 //            $(this.parentNode).find('.panel-collapse').removeClass('hidden');
+            console.dir($(this).closest('.panel-body').find('.animate-group-marker').index($(this)));
+            var group = $(this).closest('.panel')[0].group,
+                markerIndex = $(this).closest('.panel-body').find('.animate-group-marker').index($(this));
+            var markerId = group.markers[markerIndex].id;
+            for(var i = 0; i < self.googleMarkers.length; i++){
+                if(self.googleMarkers[i].id == markerId){
+                    toggleBounce(self.googleMarkers[i]);
+                    break;
+                }
+            }
+            console.dir(group);
 
 
         });

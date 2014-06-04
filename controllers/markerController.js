@@ -2,7 +2,6 @@
 
 var MarkersGroup = require('../models/group-model'),
     Marker = require('../models/marker-model.js'),
-    Promise = require('mpromise'),
     date;
 
 var MarkersController = function(){
