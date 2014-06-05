@@ -141,6 +141,7 @@
                 var groupElement;
                 console.dir(data);
                 newGroup.id = data.id;
+                newGroup.markers = data.markers;
                 self.groups.push(newGroup);
                 groupElement = self.groupTemplate.eq(0).clone();
                 groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)}).html(newGroup.name);
@@ -224,23 +225,37 @@
                     for(var i = 0; i < self.groups.length; i++){
                         if(newMarker.groupId == self.groups[i].id){
                             if(!self.groups[i].markers){self.groups[i].markers = []}
+
                             self.groups[i].markers.push(newMarker);
+//TODO important
+                            var myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude),
+                                marker = new google.maps.Marker({
+                                    position: myLatitudeLongitude,
+                                    map: self.map,
+                                    title:newMarker.description
+                                });
+                            marker.groupId = newMarker.groupId;
+                            marker.id = newMarker.id;
+                            self.googleMarkers.push(marker);
+
                             self.updateGroup(self.groups[i].id);
                             break;
                         }
                     }
 
                 }
+                else{
+                    var myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude),
+                        marker = new google.maps.Marker({
+                            position: myLatitudeLongitude,
+                            map: self.map,
+                            title:newMarker.description
+                        });
+                    marker.groupId = newMarker.groupId;
+                    marker.id = newMarker.id;
+                    self.googleMarkers.push(marker);
+                }
                 console.dir(newMarker);
-                var myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude),
-                    marker = new google.maps.Marker({
-                        position: myLatitudeLongitude,
-                        map: self.map,
-                        title:newMarker.description
-                    });
-                marker.groupId = newMarker.groupId;
-                marker.id = newMarker.id;
-                self.googleMarkers.push(marker);
                 console.dir(self.googleMarkers);
 
             })
