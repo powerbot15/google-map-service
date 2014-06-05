@@ -2,7 +2,10 @@
 
 (function($){
 
-    var MainController = function(){
+    var MainController, MarkerClass, MarkerGroupClass;
+
+
+    MainController = function(){
 
 //        this.downloadGroups();
         this.groups = [];
@@ -39,21 +42,20 @@
 
     };
 
-
     MainController.prototype.downloadGroups = function(){
         var that = this;
         $.ajax({
             type: "GET",
             url: "/groups"
         })
-            .success(function(data) {
+            .done(function(data) {
                 that.groups = data;
                 console.dir(that);
 
                 that.renderGroups();
                 that.renderMarkersInGroups();
             })
-            .error(function(err){
+            .fail(function(err){
                 console.dir(err);
             });
 
@@ -73,11 +75,11 @@
             type: "GET",
             url: "/markers"
         })
-            .success(function(data) {
+            .done(function(data) {
                 that.markers = data;
                 console.dir(that);
             })
-            .error(function(err){
+            .fail(function(err){
                 console.dir(err);
             });
 
@@ -94,7 +96,7 @@
                     url: "/group/" + id,
                     data: dataSend
                 })
-                    .success(function(data) {
+                    .done(function(data) {
 //                that.markers = data;
                         var groupElement;
                         console.dir(data);
@@ -106,7 +108,7 @@
 //                        groupElement.find('.panel-collapse').attr({id: 'collapse' + (self.groups.length-1)});
 //                        self.templateParent.append(groupElement);
                     })
-                    .error(function(err){
+                    .fail(function(err){
                         console.dir(err);
                     });
 
@@ -116,12 +118,13 @@
         }
 
     };
+
     MainController.prototype.saveGroup = function(){
         var newGroup = {},
             self = this;
         newGroup.name = $('#group-name')[0].value;
         newGroup.id = 0;
-        newGroup.markers = [];
+//        newGroup.markers = [];
         for(var i = 0; i < self.groups.length; i++){
             if(newGroup.name == self.groups[i].name){
                 alert('Such group already exists! Change the name please' );
@@ -133,7 +136,7 @@
             url: "/group",
             data: newGroup
         })
-            .success(function(data) {
+            .done(function(data) {
 //                that.markers = data;
                 var groupElement;
                 console.dir(data);
@@ -146,12 +149,11 @@
                 self.templateParent.append(groupElement);
                 self.renderGroups();
             })
-            .error(function(err){
+            .fail(function(err){
                 console.dir(err);
             });
 
     };
-
 
     MainController.prototype.removeGroup = function(id){
         var self = this;
@@ -160,7 +162,7 @@
             url: "/group/" + id
 //            data: newGroup
         })
-            .success(function(data) {
+            .done(function(data) {
 //                that.markers = data;
 //                var groupElement;
                 console.dir("Group " + id + "deleted");
@@ -187,7 +189,7 @@
                 self.renderGroups();
 
             })
-            .error(function(err){
+            .fail(function(err){
                 console.dir(err);
             });
 
@@ -215,7 +217,7 @@
             url: "/marker",
             data: newMarker
         })
-            .success(function(data) {
+            .done(function(data) {
                 newMarker = data;
                 if(newMarker.groupId != 'cloneable'){
 
@@ -242,7 +244,7 @@
                 console.dir(self.googleMarkers);
 
             })
-            .error(function(err){
+            .fail(function(err){
                 console.dir(err);
             });
 
