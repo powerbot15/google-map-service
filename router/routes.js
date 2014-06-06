@@ -1,4 +1,5 @@
-var markersController = require('../controllers/markerController');
+var MarkersController = require('../controllers/markerController'),
+    markersController = new MarkersController();
 
 module.exports = function router(app){
 
@@ -15,5 +16,7 @@ module.exports = function router(app){
     app.put('/group/:id', markersController.updateGroup);
 
     app.delete('/group/:id', markersController.removeGroup);
+
+    app.delete('/marker/:id', markersController.removeMarker);
 
 };

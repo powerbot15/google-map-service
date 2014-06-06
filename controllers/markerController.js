@@ -9,8 +9,8 @@ var MarkersController = function(){
 };
 
 
-MarkersController.saveGroup = function(request, response){
-
+MarkersController.prototype.saveGroup = function(request, response){
+    console.log('save group request');
     var newGroup = new MarkersGroup({
         name : request.param('name'),
         id : null,
@@ -34,7 +34,8 @@ MarkersController.saveGroup = function(request, response){
 
 };
 
-MarkersController.removeGroup = function(request, response){
+MarkersController.prototype.removeGroup = function(request, response){
+    console.log('request remove group');
     MarkersGroup.remove({id : request.param('id')}, function(err){
         if(!err){
             response.send({answer: 'ok'});
@@ -46,7 +47,7 @@ MarkersController.removeGroup = function(request, response){
 };
 
 
-MarkersController.updateGroup = function(request, response){
+MarkersController.prototype.updateGroup = function(request, response){
 
     console.log('request for group update id:' + request.param('id'));
     console.dir(request.params);
@@ -57,13 +58,12 @@ MarkersController.updateGroup = function(request, response){
             response.send('Did not saved');
         }
         if(group){
-            console.dir(group);
             response.send(group);
         }
     });
 
 };
-MarkersController.uploadGroups = function(request, response){
+MarkersController.prototype.uploadGroups = function(request, response){
     console.log('request for groups');
     MarkersGroup.find({}, function(err, groups){
         if(err){
@@ -88,7 +88,9 @@ MarkersController.uploadGroups = function(request, response){
     }
 };
 
-MarkersController.uploadSpecifiedGroup = function (request, response){
+MarkersController.prototype.uploadSpecifiedGroup = function (request, response){
+    console.log('request specified group');
+
     var markerGroup = {};
     date = (new Date()).toTimeString();
     console.log(date);
@@ -122,11 +124,12 @@ MarkersController.uploadSpecifiedGroup = function (request, response){
 };
 
 
-MarkersController.uploadUngroupedMarkers = function(request, response){
+MarkersController.prototype.uploadUngroupedMarkers = function(request, response){
 
     console.log('request for ungrouped markers');
+
     Marker.find({
-        groupId : null
+        groupId : 'none'
     }, function(err, markers){
         if(err){
             console.error(err);
@@ -142,7 +145,7 @@ MarkersController.uploadUngroupedMarkers = function(request, response){
 };
 
 
-MarkersController.updateMarker = function(request, response){
+MarkersController.prototype.updateMarker = function(request, response){
 
     console.log(request.param('id'));
 
@@ -150,12 +153,12 @@ MarkersController.updateMarker = function(request, response){
 
 
 
-MarkersController.saveMarker = function(request, response){
+MarkersController.prototype.saveMarker = function(request, response){
 
 //    console.dir(request.param('longitude'));
 //    response.send('ok');
 //    return;
-
+    console.log('request save marker');
     var newMarker = new Marker({
         name : request.param('name'),
         description : request.param('description'),
@@ -181,5 +184,7 @@ MarkersController.saveMarker = function(request, response){
 
 };
 
+MarkersController.prototype.removeMarker = function(request, response){
 
+};
 module.exports = MarkersController;
