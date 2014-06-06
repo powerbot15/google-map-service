@@ -4,6 +4,7 @@ MarkerGroup = mongoose.Schema({
 //        description: String,
         id: String,
         user:String,
+        iconUrl:String,
         markers:Array
     }
 );

@@ -57,3 +57,10 @@ body{
     background-color: #F4C5C5;
 
 }
+.must-scroll{
+    max-height: 400px;
+    overflow-y: auto;
+}
+.marker-icon-text>img{
+    height:15px;
+}

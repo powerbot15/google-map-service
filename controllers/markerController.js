@@ -15,7 +15,8 @@ MarkersController.prototype.saveGroup = function(request, response){
         name : request.param('name'),
         id : null,
         markers: request.param('markers') || [],
-        user:'anonymous'
+        user:'anonymous',
+        iconUrl: request.param('iconUrl')
     });
     newGroup.id = newGroup._id;
     newGroup.save(function(err, group){

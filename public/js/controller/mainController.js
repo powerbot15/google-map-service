@@ -19,6 +19,8 @@
         this.groupItemParent = $('#marker-group-items');
         this.groupItemTemplate = $('.group-item').eq(0).detach();
 
+
+        this.constructCroupIconSelect();
         this.downloadGroups();
         this.initializeMap();
         this.initializeEventsAndActions();
@@ -26,7 +28,24 @@
 
     };
 
+    MainController.prototype.constructCroupIconSelect = function(){
+        var iconParent = $('.dropdown-menu').eq(0),
+            iconTemplate = iconParent.find('li'),
+            src = "http://maps.google.com/mapfiles/kml/pal2/icon",
+            iconInsert;
 
+        iconTemplate.remove();
+
+        for(var i = 0; i <= 50; i++){
+
+            iconInsert = iconTemplate.clone();
+            iconInsert.find('a')[0].href = src + i + '.png';
+            iconInsert.find('img')[0].src = src + i + '.png';
+            iconParent.append(iconInsert);
+
+        }
+
+    };
     MainController.prototype.initializeMap = function(){
 
         var mapOptions = {
@@ -148,6 +167,8 @@
                 return;
             }
         }
+        newGroup.iconUrl = $('.marker-icon-image')[0].src;
+
         $.ajax({
             type: "POST",
             url: "/group",
@@ -162,6 +183,7 @@
                 self.groups.push(newGroup);
                 groupElement = self.groupTemplate.eq(0).clone();
                 groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)}).html(newGroup.name);
+                groupElement.find('.panel-title>img')[0].src = newGroup.iconUrl;
                 groupElement.find('.panel-collapse').attr({id: 'collapse' + (self.groups.length-1)});
                 groupElement[0].group = newGroup;
                 self.templateParent.append(groupElement);
@@ -207,6 +229,24 @@
 
     };
 
+    MainController.prototype.removeGroupMarker = function(groupId, markerId){
+        for(var i = 0; i < this.groups.length; i++){
+            if(this.groups[i].id == groupId){
+
+                for(var j = 0; j < this.groups[i].markers.length; j++){
+                    if(this.groups[i].markers[j].id == markerId){
+                        this.groups[i].markers.splice(j, 1);
+                        this.groups[i].googleMarkers[j].setMap(null);
+                        this.groups[i].googleMarkers.splice(j, 1);
+                        this.renderGroups();
+                        return;
+                    }
+                }
+
+            }
+        }
+    };
+
     MainController.prototype.saveMarker = function(){
 
         var newMarker = {
@@ -230,6 +270,8 @@
         })
             .done(function(data) {
                 newMarker = data;
+                var myLatitudeLongitude,
+                    marker;
                 if(newMarker.groupId != 'none'){
 
                     for(var i = 0; i < self.groups.length; i++){
@@ -248,13 +290,12 @@
 //                                new google.maps.Point(0, 0),
 //                                new google.maps.Point(12, 35));
 
-                            var myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude),
-                                marker = new google.maps.Marker({
+                            myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude);
+                            marker = new google.maps.Marker({
                                     position: myLatitudeLongitude,
                                     map: self.map,
                                     title:newMarker.description,
-                                    icon: "http://maps.google.com/mapfiles/kml/pal2/icon5.png",
-                                    shadow: "http://maps.google.com/mapfiles/kml/pal2/icon5s.png"
+                                    icon: self.groups[i].iconUrl
                                 });
                             marker.groupId = newMarker.groupId;
                             marker.id = newMarker.id;
@@ -269,8 +310,8 @@
                 else{
                     self.markers.push(newMarker);
                     self.renderMarkers();
-                    var myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude),
-                        marker = new google.maps.Marker({
+                    myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude);
+                    marker = new google.maps.Marker({
                             position: myLatitudeLongitude,
                             map: self.map,
                             title:newMarker.description
@@ -303,6 +344,7 @@
 //            console.dir(this.groups[i].markers);
             groupElement = this.groupTemplate.eq(0).clone();
             groupElement.find('.panel-title>a').attr({href :'#collapse' + i}).html(this.groups[i].name);
+            groupElement.find('.panel-title>img')[0].src = this.groups[i].iconUrl;
             groupElement.find('.panel-collapse').attr({id: 'collapse' + i});
             groupElement[0].group = this.groups[i];
 
@@ -313,7 +355,8 @@
             for(var j = 0; j < this.groups[i].markers.length; j++){
 
                 markerTemplateInsert = markerTemplate.clone();
-                markerTemplateInsert.find('.description').html(this.groups[i].markers[j].description).marker = this.groups[i].markers[j];
+                markerTemplateInsert.find('.description').html(this.groups[i].markers[j].description);
+                markerTemplateInsert[0].marker = this.groups[i].markers[j];
                 markerTemplateParent.append(markerTemplateInsert);
             }
 
@@ -346,8 +389,7 @@
                     position: myLatitudeLongitude,
                     map: self.map,
                     title:self.groups[i].markers[j].description,
-                    icon: "http://maps.google.com/mapfiles/kml/pal2/icon5.png",
-                    shadow: "http://maps.google.com/mapfiles/kml/pal2/icon5s.png"
+                    icon: self.groups[i].iconUrl
 
                 });
                 marker.groupId = self.groups[i].markers[j].groupId;
@@ -398,6 +440,9 @@
             self.removeGroup($(this).closest('.panel-default')[0].group.id);
 
         });
+        markerGroups.on('click', '.remove-group-marker', function(){
+            self.removeGroupMarker($(this).closest('.marker')[0].marker.groupId,$(this).closest('.marker')[0].marker.id);
+        });
         markerGroups.on('click', '.panel-heading', function(){
             $(this.parentNode).find('.panel-collapse').removeClass('hidden');
 
@@ -407,7 +452,7 @@
             console.dir($(this).closest('.panel-body').find('.animate-group-marker').index($(this)));
             var group = $(this).closest('.panel')[0].group,
                 markerIndex = $(this).closest('.panel-body').find('.animate-group-marker').index($(this));
-            var markerId = group.markers[markerIndex].id;
+//            var markerId = group.markers[markerIndex].id;
             toggleBounce(group.googleMarkers[markerIndex]);
             console.dir(group);
 
@@ -431,8 +476,16 @@
                 slideContent.addClass('hidden')
             }
         });
+
         $('form').on('submit', function(event){
             event.preventDefault();
+        });
+
+        $('.dropdown-menu').on('click', 'a', function(event){
+            event.preventDefault();
+
+//            $('.marker-icon-text').html($(this).html());
+            $('img.marker-icon-image')[0].src = this.href;
         });
         function toggleBounce(marker) {
 
@@ -459,24 +512,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //TODO
 
-function yellow(){var h2}
+
+function doNothingasdgfertgfdger(){}
