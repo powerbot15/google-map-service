@@ -344,7 +344,7 @@
 //            console.dir(this.groups[i].markers);
             groupElement = this.groupTemplate.eq(0).clone();
             groupElement.find('.panel-title>a').attr({href :'#collapse' + i}).html(this.groups[i].name);
-            groupElement.find('.panel-title>img')[0].src = this.groups[i].iconUrl;
+            groupElement.find('.group-name-icon')[0].src = this.groups[i].iconUrl;
             groupElement.find('.panel-collapse').attr({id: 'collapse' + i});
             groupElement[0].group = this.groups[i];
 
@@ -466,7 +466,30 @@
 
         });
 
+        $('.manage-markers-menu').on('click', function(){
+            if(this.shown){
+                $(this).parent().css({
+                    left : '-320px'
+                });
+                $('.map-container').css({
+                        left: '30px'
+                    }
 
+                );
+                this.shown = false;
+            }
+            else{
+                $(this).parent().css({
+                    left : 0
+                });
+                $('.map-container').css({
+                        left: '350px'
+                    }
+
+                )
+                this.shown = true
+            }
+        });
         $('.btn-slide').on('click', function(event){
             var slideContent = $(this).parent().find('.slide');
             if(slideContent.hasClass('hidden')){

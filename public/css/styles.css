@@ -1,28 +1,44 @@
 body{
-    background-image: url(../img/4324330.png);
+    /*background-image: url(../img/4324330.png);*/
 
 }
 .wrapper{
-    font-size: 0;
-    margin: auto;
-    max-width: 1280px;
-    min-width: 1280px;
-    border: 1px solid gray;
-    padding: 10px;
-    height: 1024px;
-    background-color: #ffffff;
+    /*font-size: 0;*/
+    /*margin: auto;*/
+    /*max-width: 1280px;*/
+    /*min-width: 1280px;*/
+    /*border: 1px solid gray;*/
+    /*padding: 10px;*/
+    /*height: 1024px;*/
+    /*background-color: #ffffff;*/
 }
 
 .wrapper > *{
     font-size: 12pt;
 
 }
-
+.options, .map-container{
+    -webkit-transition: all 0.5s ease 0;
+    -moz-transition: all 0.5s ease 0;
+    -ms-transition: all 0.5s ease 0;
+    -o-transition: all 0.5s ease 0;
+    transition: all 0.5s ease 0;
+}
 .options{
-    width : 35%;
-    height: 100%;
-    display: inline-block;
-    vertical-align: top;
+    position: absolute;
+    top: 10px;
+    width : 350px;
+    left: -320px;
+    /*max-height: 800px;*/
+
+    /*height: 100%;*/
+    /*display: inline-block;*/
+    padding-right: 30px;
+
+    /*bottom: 0;*/
+    overflow-y: auto;
+    z-index: 100;
+
 }
 .tab-content{
     border-left: 1px solid lightgray;
@@ -32,9 +48,14 @@ body{
     max-height: 960px;
 }
 .map-container{
-    width: 65%;
-    display: inline-block;
-    height: 100%;
+    /*width: 65%;*/
+    /*display: inline-block;*/
+    /*height: 100%;*/
+    position: absolute;
+    top: 0;
+    left: 30px;
+    bottom: 0;
+    right: 0;
 }
 .non-active{
     display: none;
@@ -45,7 +66,7 @@ body{
 .align-right{
     position:absolute;
     right: 5px;
-    top:10%;
+    top:5px;
 }
 .remove-group, .remove-group-marker, .animate-group-marker{
     cursor: pointer;
@@ -63,4 +84,7 @@ body{
 }
 .marker-icon-text>img{
     height:15px;
+}
+.glyphicon-th-list{
+    cursor: pointer;
 }
