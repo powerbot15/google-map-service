@@ -17,7 +17,7 @@ body{
     font-size: 12pt;
 
 }
-.options, .map-container{
+.options, .map-container, .manage-markers-menu{
     -webkit-transition: all 0.5s ease 0;
     -moz-transition: all 0.5s ease 0;
     -ms-transition: all 0.5s ease 0;
@@ -26,19 +26,31 @@ body{
 }
 .options{
     position: absolute;
-    top: 10px;
+    top: 0;
     width : 350px;
-    left: -320px;
+    left: -350px;
     /*max-height: 800px;*/
 
     /*height: 100%;*/
     /*display: inline-block;*/
-    padding-right: 30px;
+    padding: 5px;
 
-    /*bottom: 0;*/
+    bottom: 0;
+
     overflow-y: auto;
     z-index: 100;
 
+}
+.tab-pane{
+    padding: 5px;
+}
+.manage-markers-menu{
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    padding: 5px;
+    z-index: 115;
+    background-color: #ffff00;
 }
 .tab-content{
     border-left: 1px solid lightgray;
@@ -53,7 +65,7 @@ body{
     /*height: 100%;*/
     position: absolute;
     top: 0;
-    left: 30px;
+    left: 0px;
     bottom: 0;
     right: 0;
 }

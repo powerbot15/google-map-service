@@ -429,10 +429,12 @@
             ungroupedMarkers = $('.ungrouped-markers');
 
         $('#save-group').on('click', function(){
+            $(this).closest('.slide').addClass('hidden');
             self.saveGroup();
         });
 
         $('#save-marker').on('click', function(){
+            $(this).closest('.slide').addClass('hidden');
             self.saveMarker();
         });
 
@@ -468,25 +470,35 @@
 
         $('.manage-markers-menu').on('click', function(){
             if(this.shown){
-                $(this).parent().css({
-                    left : '-320px'
+
+                $(this).css({
+                    left:'5px'
+                });
+
+                $('.options').css({
+                    left : '-350px'
                 });
                 $('.map-container').css({
-                        left: '30px'
+                        left: '0px'
                     }
 
                 );
                 this.shown = false;
             }
             else{
-                $(this).parent().css({
+
+                $(this).css({
+                    left:'355px'
+                });
+                $('.options').css({
                     left : 0
                 });
                 $('.map-container').css({
                         left: '350px'
                     }
 
-                )
+                );
+
                 this.shown = true
             }
         });
