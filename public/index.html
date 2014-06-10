@@ -46,72 +46,67 @@
                                     </span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                <div class="btn btn-primary btn-block btn-slide">
-                    <span class="glyphicon glyphicon-plus-sign"></span> New Group
-                </div>
-                <div class="slide hidden">
-                    <form role="form">
-                        <div class="form-group">
-                            <label for="group-name" >Group name: </label>
-                            <input type="text" class="form-control" id="group-name" placeholder="Enter group name">
-                        </div>
-                        <div class="form-group">
-                            <label for="group-name" >Group icon: </label>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-info marker-icon-text">Icon :</button>
-                                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
-                                    <span class="caret"></span>
-                                    <span class="sr-only">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu must-scroll" role="menu">
-                                    <li><a href=""><img src="" alt=""/></a></li>
-                                </ul>
-                                <img class="marker-icon-image" src="http://maps.google.com/mapfiles/kml/pal2/icon5.png" alt=""/>
+                            <div>
+                                <div class="btn btn-primary btn-block btn-slide">
+                                    <span class="glyphicon glyphicon-plus-sign"></span> New Marker
+                                </div>
+                                <div class="slide hidden">
+                                    <!--<div>-->
+                                    <div class="form-group">
+                                        <label for="marker-description" >Marker description: </label>
+                                        <input type="text" class="form-control marker-description" placeholder="Enter marker description">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="marker-latitude" >Marker latitude: </label>
+                                        <input type="text" class="form-control marker-latitude" placeholder="Click on the map to accept" disabled="disabled">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="marker-longitude" >Marker longitude: </label>
+                                        <input type="text" class="form-control marker-longitude" placeholder="Click on the map to accept" disabled="disabled">
+                                    </div>
+                                    <span class="btn btn-success form-control save-marker">Save</span>
+                                    <!--</div>-->
+                                </div>
                             </div>
 
                         </div>
-                        <span class="btn btn-default" id="save-group">Save</span>
-                    </form>
-                    <!--<div class="collection-container">-->
-                    <!--<ul class="collection">-->
-                    <!--<li class="collection-title"></li>-->
-                    <!--<li class="collection-title"></li>-->
-                    <!--</ul>-->
-                    <!--</div>-->
+                    </div>
                 </div>
-                </div>
+                <hr/>
                 <div>
-                <div class="btn btn-primary btn-block btn-slide">
-                    <span class="glyphicon glyphicon-plus-sign"></span> New Marker
-                </div>
-                <div class="slide hidden">
-                    <!--<div>-->
-                        <div class="form-group">
-                            <label for="marker-description" >Marker description: </label>
-                            <input type="text" class="form-control" id="marker-description" placeholder="Enter marker description">
-                        </div>
-                        <div class="form-group">
-                            <label for="marker-latitude" >Marker latitude: </label>
-                            <input type="text" class="form-control" id="marker-latitude" placeholder="Click on the map to accept" disabled="disabled">
-                        </div>
-                        <div class="form-group">
-                            <label for="marker-longitude" >Marker longitude: </label>
-                            <input type="text" class="form-control" id="marker-longitude" placeholder="Click on the map to accept" disabled="disabled">
-                        </div>
-                        <div class="form-group">
-                            <label for="marker-group-items" >Marker group: </label>
-                            <select name="groups" class="form-control" id="marker-group-items">
-                                <option class="group-item-default" value="none">none</option>
-                                <option class="group-item" value="cloneable">Cloneable</option>
-                            </select>
-                        </div>
-                        <span class="btn btn-success form-control" id="save-marker">Save</span>
-                    <!--</div>-->
-                </div>
+                    <div class="btn btn-primary btn-block btn-slide">
+                        <span class="glyphicon glyphicon-plus-sign"></span> New Group
+                    </div>
+                    <div class="slide hidden">
+                        <form role="form">
+                            <div class="form-group">
+                                <label for="group-name" >Group name: </label>
+                                <input type="text" class="form-control" id="group-name" placeholder="Enter group name">
+                            </div>
+                            <div class="form-group">
+                                <label for="group-name" >Group icon: </label>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-info marker-icon-text">Icon :</button>
+                                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                                        <span class="caret"></span>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu must-scroll" role="menu">
+                                        <li><a href=""><img src="" alt=""/></a></li>
+                                    </ul>
+                                    <img class="marker-icon-image" src="http://maps.google.com/mapfiles/kml/pal2/icon5.png" alt=""/>
+                                </div>
+
+                            </div>
+                            <span class="btn btn-success form-control" id="save-group">Save</span>
+                        </form>
+                        <!--<div class="collection-container">-->
+                        <!--<ul class="collection">-->
+                        <!--<li class="collection-title"></li>-->
+                        <!--<li class="collection-title"></li>-->
+                        <!--</ul>-->
+                        <!--</div>-->
+                    </div>
                 </div>
             </div>
             <!--MARKERS-->
@@ -126,6 +121,36 @@
                     </div>
 
                 </div>
+                <div>
+                    <div class="btn btn-primary btn-block btn-slide">
+                        <span class="glyphicon glyphicon-plus-sign"></span> New Marker
+                    </div>
+                    <div class="slide hidden">
+                        <!--<div>-->
+                        <div class="form-group">
+                            <label for="marker-description" >Marker description: </label>
+                            <input type="text" class="form-control marker-description" placeholder="Enter marker description">
+                        </div>
+                        <div class="form-group">
+                            <label for="marker-latitude" >Marker latitude: </label>
+                            <input type="text" class="form-control marker-latitude" placeholder="Click on the map to accept" disabled="disabled">
+                        </div>
+                        <div class="form-group">
+                            <label for="marker-longitude" >Marker longitude: </label>
+                            <input type="text" class="form-control marker-longitude" placeholder="Click on the map to accept" disabled="disabled">
+                        </div>
+                        <div class="form-group">
+                            <label for="marker-group-items" >Marker group: </label>
+                            <select name="groups" class="form-control" id="marker-group-items">
+                                <option class="group-item-default" value="none">none</option>
+                                <option class="group-item" value="cloneable">Cloneable</option>
+                            </select>
+                        </div>
+                        <span class="btn btn-success form-control save-marker">Save</span>
+                        <!--</div>-->
+                    </div>
+                </div>
+
 
             </div>
         </div>

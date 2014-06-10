@@ -7,7 +7,7 @@ module.exports = function router(app){
 
     app.get('/group/:groupId', markersController.uploadSpecifiedGroup);
 
-    app.get('/markers', markersController.uploadUngroupedMarkers);
+    app.get('/markers', markersController.uploadMarkers);
 
     app.post('/marker', markersController.saveMarker);
 

@@ -19,12 +19,12 @@
         this.groupItemParent = $('#marker-group-items');
         this.groupItemTemplate = $('.group-item').eq(0).detach();
 
-
+        this.initializeMap();
         this.constructCroupIconSelect();
         this.downloadGroups();
-        this.initializeMap();
+
         this.initializeEventsAndActions();
-        this.downloadUngroupedMarkers();
+//        this.renderUngroupedMarkers();
 
     };
 
@@ -56,8 +56,8 @@
         this.map = new google.maps.Map($('.map-container')[0], mapOptions);
 
         google.maps.event.addListener(this.map, 'click', function(event) {
-            $('#marker-latitude')[0].value = event.latLng.k;
-            $('#marker-longitude')[0].value = event.latLng.A;
+            $('.active-marker-form .marker-latitude')[0].value = event.latLng.k;
+            $('.active-marker-form .marker-longitude')[0].value = event.latLng.A;
         });
 
     };
@@ -71,9 +71,7 @@
             .done(function(data) {
                 that.groups = data;
                 console.dir(that);
-
-                that.renderGroups();
-                that.renderMarkersInGroups();
+                that.getMarkers();
             })
             .fail(function(err){
                 console.dir(err);
@@ -82,39 +80,63 @@
     };
 
 
-    MainController.prototype.createReceivedGroups = function(groups){
+    MainController.prototype.getMarkers = function(){
 
-
-
-    };
-
-
-    MainController.prototype.downloadUngroupedMarkers = function(){
-        var self = this;
+        var that = this;
         $.ajax({
             type: "GET",
             url: "/markers"
         })
             .done(function(data) {
-                self.markers = data;
-                for(var i = 0; i < self.markers.length; i++){
-                    var myLatitudeLongitude = new google.maps.LatLng( self.markers[i].location.latitude, self.markers[i].location.longitude),
-                        marker = new google.maps.Marker({
-                            position: myLatitudeLongitude,
-                            map: self.map,
-                            title:self.markers[i].description
-                        });
-                    marker.groupId = self.markers[i].groupId;
-                    marker.id = self.markers[i].id;
-                    self.googleMarkers.push(marker);
+                var receivedMarkers = data;
+                //initialize markers
+                for(var k = 0; k < that.groups.length; k++){
+                    that.groups[k].markers = [];
+                    that.groups[k].googleMarkers = [];
                 }
-                console.dir(self);
-                self.renderMarkers();
+                //
+                for(var i = 0; i < receivedMarkers.length; i++){
+                    if(receivedMarkers[i].groupId == 'none'){
+                        that.markers.push(receivedMarkers[i]);
+                        continue;
+                    }
+                    for(var j = 0; j < that.groups.length; j++){
+                        if(that.groups[j].id == receivedMarkers[i].groupId){
+                            that.groups[j].markers.push(receivedMarkers[i]);
+                            break;
+                        }
+                    }
+                }
+
+                that.renderGroups();
+                that.renderMarkersInGroups();
+                that.renderUngroupedMarkers();
+
             })
             .fail(function(err){
                 console.dir(err);
             });
 
+
+
+    };
+
+
+    MainController.prototype.renderUngroupedMarkers = function(){
+        var self = this;
+        for(var i = 0; i < self.markers.length; i++){
+            var myLatitudeLongitude = new google.maps.LatLng( self.markers[i].location.latitude, self.markers[i].location.longitude),
+                marker = new google.maps.Marker({
+                    position: myLatitudeLongitude,
+                    map: self.map,
+                    title:self.markers[i].description
+                });
+            marker.groupId = self.markers[i].groupId;
+            marker.id = self.markers[i].id;
+            self.googleMarkers.push(marker);
+        }
+        console.dir(self);
+        self.renderMarkers();
     };
 
     MainController.prototype.updateGroup = function(id){
@@ -179,7 +201,7 @@
                 var groupElement;
                 console.dir(data);
                 newGroup.id = data.id;
-                newGroup.markers = data.markers;
+                newGroup.markers = [];
                 self.groups.push(newGroup);
                 groupElement = self.groupTemplate.eq(0).clone();
                 groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)}).html(newGroup.name);
@@ -230,6 +252,7 @@
     };
 
     MainController.prototype.removeGroupMarker = function(groupId, markerId){
+        this.removeMarker(markerId);
         for(var i = 0; i < this.groups.length; i++){
             if(this.groups[i].id == groupId){
 
@@ -238,30 +261,26 @@
                         this.groups[i].markers.splice(j, 1);
                         this.groups[i].googleMarkers[j].setMap(null);
                         this.groups[i].googleMarkers.splice(j, 1);
-                        this.renderGroups();
+//                        this.renderGroups();
                         return;
                     }
                 }
 
             }
         }
+
     };
+    MainController.prototype.removeMarker = function(markerId){
+        $.ajax({
+            type:'DELETE',
+            url:'/marker/' + markerId
+        }).done(function(data){});
+    };
+    MainController.prototype.saveMarker = function(marker){
 
-    MainController.prototype.saveMarker = function(){
+        var newMarker = marker,
+            self = this;
 
-        var newMarker = {
-                location:{
-                    latitude:0,
-                    longitude:0
-                }
-            },
-            self = this,
-            groupItemsSelect = $('#marker-group-items')[0];
-
-        newMarker.description = $('#marker-description')[0].value;
-        newMarker.location.latitude = $('#marker-latitude')[0].value;
-        newMarker.location.longitude = $('#marker-longitude')[0].value;
-        newMarker.groupId = groupItemsSelect.options[groupItemsSelect.selectedIndex].value;
 
         $.ajax({
             type: "POST",
@@ -301,7 +320,8 @@
                             marker.id = newMarker.id;
                             self.groups[i].googleMarkers.push(marker);
 
-                            self.updateGroup(self.groups[i].id);
+//                            self.updateGroup(self.groups[i].id);
+                            self.renderGroups();
                             break;
                         }
                     }
@@ -433,9 +453,52 @@
             self.saveGroup();
         });
 
+
+
         $('#save-marker').on('click', function(){
+            var newMarker = {
+                description:'',
+                location: {},
+                groupId : 0
+            },
+                groupItemsSelect = $('#marker-group-items')[0];
+            newMarker.description = $('#marker-description')[0].value;
+            newMarker.location.latitude = $('#marker-latitude')[0].value;
+            newMarker.location.longitude = $('#marker-longitude')[0].value;
+            newMarker.groupId = groupItemsSelect.options[groupItemsSelect.selectedIndex].value;
             $(this).closest('.slide').addClass('hidden');
-            self.saveMarker();
+            self.saveMarker(newMarker);
+        });
+
+        $('.options').on('click', '.save-marker', function(){
+            var newMarker = {
+                description:'',
+                location: {},
+                groupId : 0
+            },
+                eventTarget = $(this),
+                markerForm = $('.active-marker-form'),
+                idContainer = eventTarget.closest('.panel-default'),
+                groupItemsSelect = markerForm.find('#marker-group-items');
+            newMarker.description = markerForm.find('.marker-description')[0].value;
+            newMarker.location.latitude = markerForm.find('.marker-latitude')[0].value;
+            newMarker.location.longitude = markerForm.find('.marker-longitude')[0].value;
+            newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].options[groupItemsSelect[0].selectedIndex].value : idContainer[0].group.id;
+            self.saveMarker(newMarker);
+            $(this).closest('.slide').addClass('hidden').removeClass('active-marker-form');
+        });
+        $('.options').on('click', '.remove-marker', function(event){
+
+            var markerId = $(this).closest('.marker')[0].marker.id;
+            self.removeMarker(markerId);
+            for(var i = 0; i < self.googleMarkers.length; i++){
+                if(markerId == self.googleMarkers[i].id){
+                    self.googleMarkers[i].setMap(null);
+                    break;
+                }
+            }
+            $(this).closest('.marker').remove();
+
         });
 
         markerGroups.on('click', '.remove-group', function(){
@@ -443,7 +506,9 @@
 
         });
         markerGroups.on('click', '.remove-group-marker', function(){
+
             self.removeGroupMarker($(this).closest('.marker')[0].marker.groupId,$(this).closest('.marker')[0].marker.id);
+            $(this).closest('.marker').remove();
         });
         markerGroups.on('click', '.panel-heading', function(){
             $(this.parentNode).find('.panel-collapse').removeClass('hidden');
@@ -502,13 +567,14 @@
                 this.shown = true
             }
         });
-        $('.btn-slide').on('click', function(event){
+        $('body').on('click', '.btn-slide', function(event){
             var slideContent = $(this).parent().find('.slide');
             if(slideContent.hasClass('hidden')){
-                slideContent.removeClass('hidden')
+                slideContent.removeClass('hidden').addClass('active-marker-form');
+
             }
             else{
-                slideContent.addClass('hidden')
+                slideContent.addClass('hidden').removeClass('active-marker-form');
             }
         });
 

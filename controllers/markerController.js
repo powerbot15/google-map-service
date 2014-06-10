@@ -14,7 +14,7 @@ MarkersController.prototype.saveGroup = function(request, response){
     var newGroup = new MarkersGroup({
         name : request.param('name'),
         id : null,
-        markers: request.param('markers') || [],
+//        markers: request.param('markers') || [],
         user:'anonymous',
         iconUrl: request.param('iconUrl')
     });
@@ -39,10 +39,18 @@ MarkersController.prototype.removeGroup = function(request, response){
     console.log('request remove group');
     MarkersGroup.remove({id : request.param('id')}, function(err){
         if(!err){
-            response.send({answer: 'ok'});
+            Marker.remove({groupId : request.param('id')}, function(err){
+                if(!err) {
+                    response.send({answer: 'ok'});
+                }
+                else{
+                    response.send({answer: 'failremovemarkers'});
+                }
+            });
+
         }
         else{
-            response.send({answer: 'fail'});
+            response.send({answer: 'failremovegroup'});
         }
     });
 };
@@ -75,6 +83,9 @@ MarkersController.prototype.uploadGroups = function(request, response){
         }
         if(groups.length){
             response.send(groups);
+        }
+        else{
+            response.send([]);
         }
     });
     function findCollectionMarkers(collection){
@@ -125,13 +136,11 @@ MarkersController.prototype.uploadSpecifiedGroup = function (request, response){
 };
 
 
-MarkersController.prototype.uploadUngroupedMarkers = function(request, response){
+MarkersController.prototype.uploadMarkers = function(request, response){
 
     console.log('request for ungrouped markers');
 
-    Marker.find({
-        groupId : 'none'
-    }, function(err, markers){
+    Marker.find({}, function(err, markers){
         if(err){
             console.error(err);
             response.status(404);
@@ -186,6 +195,10 @@ MarkersController.prototype.saveMarker = function(request, response){
 };
 
 MarkersController.prototype.removeMarker = function(request, response){
-
+    console.log('Request remove marker ' + request.param('id'));
+    Marker.remove({id : request.param('id')}, function(err, doc){
+        console.log(err + '     ' + doc);
+    });
+    response.send('ok');
 };
 module.exports = MarkersController;

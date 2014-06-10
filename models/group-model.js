@@ -4,8 +4,8 @@ MarkerGroup = mongoose.Schema({
 //        description: String,
         id: String,
         user:String,
-        iconUrl:String,
-        markers:Array
+        iconUrl:String
+//        markers:Array
     }
 );
 module.exports = mongoose.model('MarkerGroup', MarkerGroup);
