@@ -4,7 +4,10 @@ var mongoose = require('mongoose'),
             description: String,
             id: String,
             groupId: String,
-            location: Object,
+            location: {
+                latitude : Number,
+                longitude : Number
+            },
             user:String
         }
     );

@@ -2,10 +2,7 @@
 
 (function($){
 
-    var MainController, MarkerClass, MarkerGroupClass;
-
-
-    MainController = function(){
+    var MainController = function(){
 
 //        this.downloadGroups();
         this.groups = [];
@@ -46,6 +43,7 @@
         }
 
     };
+
     MainController.prototype.initializeMap = function(){
 
         var mapOptions = {
@@ -79,7 +77,6 @@
 
     };
 
-
     MainController.prototype.getMarkers = function(){
 
         var that = this;
@@ -112,6 +109,33 @@
                 that.renderMarkersInGroups();
                 that.renderUngroupedMarkers();
 
+                var group = {
+                    markers : [
+                        {location : {
+                            latitude : 2,
+                            longitude : 1
+                        }
+                        },
+                        {location : {
+                            latitude : 3,
+                            longitude : 2
+                        }
+                        },
+                        {location : {
+                            latitude : 2,
+                            longitude : 3
+                        }
+                        },
+                        {location : {
+                            latitude : 1,
+                            longitude : 2
+                        }
+                        }
+
+                    ]
+                };
+                that.createPolygon(group);
+
             })
             .fail(function(err){
                 console.dir(err);
@@ -120,7 +144,6 @@
 
 
     };
-
 
     MainController.prototype.renderUngroupedMarkers = function(){
         var self = this;
@@ -208,6 +231,7 @@
                 groupElement.find('.panel-title>img')[0].src = newGroup.iconUrl;
                 groupElement.find('.panel-collapse').attr({id: 'collapse' + (self.groups.length-1)});
                 groupElement[0].group = newGroup;
+                groupElement[0].groupIndex = self.groups.length - 1;
                 self.templateParent.append(groupElement);
                 self.renderGroups();
             })
@@ -270,12 +294,14 @@
         }
 
     };
+
     MainController.prototype.removeMarker = function(markerId){
         $.ajax({
             type:'DELETE',
             url:'/marker/' + markerId
         }).done(function(data){});
     };
+
     MainController.prototype.saveMarker = function(marker){
 
         var newMarker = marker,
@@ -367,6 +393,7 @@
             groupElement.find('.group-name-icon')[0].src = this.groups[i].iconUrl;
             groupElement.find('.panel-collapse').attr({id: 'collapse' + i});
             groupElement[0].group = this.groups[i];
+            groupElement[0].groupIndex = i;
 
             markerTemplate = groupElement.find('.marker').eq(0);
             markerTemplate.remove();
@@ -392,6 +419,7 @@
         console.dir(this.groups);
         $('.collapse').collapse();
     };
+
     MainController.prototype.renderMarkersInGroups = function(){
         var myLatitudeLongitude,
             marker,
@@ -422,7 +450,6 @@
 
     };
 
-
     MainController.prototype.renderMarkers = function(){
 
         this.ungroupedMarkersParent.empty();
@@ -442,10 +469,83 @@
 
     };
 
+    MainController.prototype.createPolygon = function(group){
+
+        if(group.markers.length <= 2){
+            alert('Not enough markers to create polygon. At least three required');
+        }
+
+        var polyLine = [],
+            eachStepPoints = [],
+            startPoint = {
+                latitude : 0,
+                longitude : 1000
+            },
+            nextPoint = {
+                latitude : 0,
+                longitude : 0
+            },
+            minAnglePolar = 1000,
+            minAngleIndex = 0,
+            anglePolar;
+
+        for(var i = 0; i < group.markers.length; i++){
+            if(group.markers[i].location.longitude < startPoint.longitude){
+                startPoint.latitude = group.markers[i].location.latitude;
+                startPoint.longitude = group.markers[i].location.longitude;
+            }
+        }
+
+        polyLine.push(new google.maps.LatLng(startPoint.latitude, startPoint.longitude));
+        do{
+            for(var i = 0; i < group.markers.length; i++){
+                var currentLocation = group.markers[i].location;
+                console.dir(currentLocation);
+                var x = currentLocation.latitude - startPoint.latitude,
+                    y = currentLocation.longitude - startPoint.longitude;
+
+                if( x > 0 && y >= 0){
+                    anglePolar = Math.atan2(x, y);
+                }
+                if( x > 0 && y < 0){
+                    anglePolar = Math.atan2(x, y) + 2 * Math.PI;
+                }
+                if( x < 0){
+                    anglePolar = Math.atan2(x, y) + Math.PI;
+                }
+                if( x == 0 && y > 0){
+                    anglePolar = Math.PI / 2;
+                }
+                if( x == 0 && y < 0){
+                    anglePolar = 3 * Math.PI / 2
+                }
+
+                if( x == 0 && y == 0){
+                    anglePolar = 2000;
+                }
+                if(anglePolar < minAnglePolar){
+                    minAnglePolar = anglePolar;
+                    minAngleIndex = i;
+                }
+            }
+            polyLine.push(new google.maps.LatLng(group.markers[minAngleIndex].location.latitude, group.markers[minAngleIndex].location.longitude));
+            startPoint.latitude = group.markers[minAngleIndex].location.latitude;
+            startPoint.longitude = group.markers[minAngleIndex].location.longitude;
+            minAnglePolar = 2000;
+
+        }
+        while(polyLine[polyLine.length - 1].longitude != startPoint.longitude && polyLine[polyLine.length - 1].latitude != startPoint.latitude);
+
+        console.dir(polyLine);
+//        console.dir(startPoint);
+
+    };
+
     MainController.prototype.initializeEventsAndActions = function(){
 
         var self = this,
             markerGroups = $('#marker-groups'),
+            optionsBlock = $('.options'),
             ungroupedMarkers = $('.ungrouped-markers');
 
         $('#save-group').on('click', function(){
@@ -470,7 +570,7 @@
             self.saveMarker(newMarker);
         });
 
-        $('.options').on('click', '.save-marker', function(){
+        optionsBlock.on('click', '.save-marker', function(){
             var newMarker = {
                 description:'',
                 location: {},
@@ -487,7 +587,7 @@
             self.saveMarker(newMarker);
             $(this).closest('.slide').addClass('hidden').removeClass('active-marker-form');
         });
-        $('.options').on('click', '.remove-marker', function(event){
+        optionsBlock.on('click', '.remove-marker', function(event){
 
             var markerId = $(this).closest('.marker')[0].marker.id;
             self.removeMarker(markerId);
@@ -500,6 +600,44 @@
             $(this).closest('.marker').remove();
 
         });
+
+//        optionsBlock.on('click', '.show-hide-group', function(event){
+////            for()
+//            var panel = $(this).closest('.panel');
+//            if(!panel.find('.collapse').hasClass('in')){
+//                for(var i = 0; i < self.groups.length; i++){
+//                    for(var j = 0; j < self.groups[i].googleMarkers.length; j++){
+//                        if(!self.groups[i].googleMarkers[j].shown){
+//                            self.groups[i].googleMarkers[j].setVisible(false);
+//                            self.groups[i].googleMarkers[j].shown = false;
+//                        }
+//                    }
+//                }
+//                for(var k = 0; k < self.groups[panel[0].groupIndex].googleMarkers.length; k++){
+//                    self.groups[panel[0].groupIndex].googleMarkers[k].setVisible(true);
+//                    self.groups[panel[0].groupIndex].googleMarkers[k].shown = true;
+//                }
+//
+//            }
+//            else{
+////                if($('.options .collapse').hasClass('in')){
+//                for(var k = 0; k < self.groups[panel[0].groupIndex].googleMarkers.length; k++){
+//                    self.groups[panel[0].groupIndex].googleMarkers[k].setVisible(false);
+//                    self.groups[panel[0].groupIndex].googleMarkers[k].shown = false;
+//                }
+//
+//            }
+//            if($('.options').find('.collapsed').length === self.groups.length){
+//                for(var i = 0; i < self.groups.length; i++){
+//                        for(var j = 0; j < self.groups[i].googleMarkers.length; j++){
+//                            self.groups[i].googleMarkers[j].setVisible(true);
+//                        }
+//                }
+//            }
+//
+////            console.dir(this);
+//        });
+
 
         markerGroups.on('click', '.remove-group', function(){
             self.removeGroup($(this).closest('.panel-default')[0].group.id);
@@ -521,6 +659,10 @@
                 markerIndex = $(this).closest('.panel-body').find('.animate-group-marker').index($(this));
 //            var markerId = group.markers[markerIndex].id;
             toggleBounce(group.googleMarkers[markerIndex]);
+            setTimeout(function(){
+                toggleBounce(group.googleMarkers[markerIndex]);
+            }, 2500);
+
             console.dir(group);
 
         });
@@ -530,6 +672,9 @@
             var markerIndex = $(this).closest('.ungrouped-markers').find('.animate-group-marker').index($(this));
             console.dir(self);
             toggleBounce(self.googleMarkers[markerIndex]);
+            setTimeout(function(){
+                toggleBounce(self.googleMarkers[markerIndex]);
+            }, 2500);
 
         });
 
@@ -597,23 +742,7 @@
             }
         }
     };
+
     var mainController = new MainController();
 
 })(jQuery);
-
-
-
-
-
-
-
-
-
-
-
-
-
-//TODO
-
-
-function doNothingasdgfertgfdger(){}
