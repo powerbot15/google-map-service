@@ -47,10 +47,24 @@ body{
 .manage-markers-menu{
     position: absolute;
     left: 5px;
-    top: 5px;
-    padding: 5px;
+    top: 50%;
+    margin-top: -30px;
+    padding: 25px;
     z-index: 115;
-    background-color: #ffff00;
+    background-color:#fcfcfc;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0,0,0,1);
+
+    /*-webkit-transition: none;*/
+    /*-moz-transition: none;*/
+    /*-ms-transition: none;*/
+    /*-o-transition: none;*/
+    /*transition: none;*/
+
+    /*#ffff00;*/
+}
+.manage-markers-menu:hover{
+    box-shadow: 0 0 10px rgba(150,0,0,1);
 }
 .tab-content{
     border-left: 1px solid lightgray;
@@ -80,7 +94,7 @@ body{
     right: 5px;
     top:5px;
 }
-.remove-group, .remove-group-marker, .animate-group-marker{
+.remove-group, .remove-group-marker, .animate-group-marker, .show-hull{
     cursor: pointer;
 }
 .marker{
@@ -99,4 +113,12 @@ body{
 }
 .glyphicon-th-list{
     cursor: pointer;
+}
+.glyphicon-polygon{
+    background-image: url(../img/glyphicons_096_vector_path_polygon.png);
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-position: center;
 }

@@ -90,6 +90,7 @@
                 for(var k = 0; k < that.groups.length; k++){
                     that.groups[k].markers = [];
                     that.groups[k].googleMarkers = [];
+                    that.groups[k].hull = [];
                 }
                 //
                 for(var i = 0; i < receivedMarkers.length; i++){
@@ -104,37 +105,12 @@
                         }
                     }
                 }
-
+                for( j = 0; j < that.groups.length; j++){
+                    that.createPolygon(that.groups[j]);
+                }
                 that.renderGroups();
                 that.renderMarkersInGroups();
                 that.renderUngroupedMarkers();
-
-                var group = {
-                    markers : [
-                        {location : {
-                            latitude : 2,
-                            longitude : 1
-                        }
-                        },
-                        {location : {
-                            latitude : 3,
-                            longitude : 2
-                        }
-                        },
-                        {location : {
-                            latitude : 2,
-                            longitude : 3
-                        }
-                        },
-                        {location : {
-                            latitude : 1,
-                            longitude : 2
-                        }
-                        }
-
-                    ]
-                };
-                that.createPolygon(group);
 
             })
             .fail(function(err){
@@ -252,14 +228,18 @@
 //                that.markers = data;
 //                var groupElement;
                 console.dir("Group " + id + "deleted");
+
                 for(var i = 0; i < self.groups.length; i++){
 
                     if(self.groups[i].id == id){
                         var j = 0;
-                        while(j < self.groups[i].googleMarkers.length){
-                            self.groups[i].googleMarkers[j].setMap(null);
-                            j++;
+                        if(self.groups[i].googleMarkers){
+                            while(j < self.groups[i].googleMarkers.length){
+                                self.groups[i].googleMarkers[j].setMap(null);
+                                j++;
+                            }
                         }
+                        self.groups[i].groupMapHull.setMap(null);
                         self.groups.splice(i, 1);
                         break;
                     }
@@ -286,6 +266,7 @@
                         this.groups[i].googleMarkers[j].setMap(null);
                         this.groups[i].googleMarkers.splice(j, 1);
 //                        this.renderGroups();
+                        this.createPolygon(this.groups[i]);
                         return;
                     }
                 }
@@ -325,16 +306,6 @@
                             if(!self.groups[i].googleMarkers){self.groups[i].googleMarkers = []}
 
                             self.groups[i].markers.push(newMarker);
-//                            var pinColor = "00AA00";
-//                            var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
-//                                new google.maps.Size(21, 34),
-//                                new google.maps.Point(0,0),
-//                                new google.maps.Point(10, 34));
-//                            var pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
-//                                new google.maps.Size(40, 37),
-//                                new google.maps.Point(0, 0),
-//                                new google.maps.Point(12, 35));
-
                             myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude);
                             marker = new google.maps.Marker({
                                     position: myLatitudeLongitude,
@@ -347,10 +318,13 @@
                             self.groups[i].googleMarkers.push(marker);
 
 //                            self.updateGroup(self.groups[i].id);
+                            self.createPolygon(self.groups[i]);
                             self.renderGroups();
                             break;
                         }
                     }
+
+
 
                 }
                 else{
@@ -472,72 +446,28 @@
     MainController.prototype.createPolygon = function(group){
 
         if(group.markers.length <= 2){
-            alert('Not enough markers to create polygon. At least three required');
+            console.log('Not enough markers to create polygon. At least three required');
+            return;
         }
 
-        var polyLine = [],
-            eachStepPoints = [],
-            startPoint = {
-                latitude : 0,
-                longitude : 1000
-            },
-            nextPoint = {
-                latitude : 0,
-                longitude : 0
-            },
-            minAnglePolar = 1000,
-            minAngleIndex = 0,
-            anglePolar;
 
+        var coords = [],
+            hull = [],
+            countPoints = 0;
         for(var i = 0; i < group.markers.length; i++){
-            if(group.markers[i].location.longitude < startPoint.longitude){
-                startPoint.latitude = group.markers[i].location.latitude;
-                startPoint.longitude = group.markers[i].location.longitude;
-            }
-        }
 
-        polyLine.push(new google.maps.LatLng(startPoint.latitude, startPoint.longitude));
-        do{
-            for(var i = 0; i < group.markers.length; i++){
-                var currentLocation = group.markers[i].location;
-                console.dir(currentLocation);
-                var x = currentLocation.latitude - startPoint.latitude,
-                    y = currentLocation.longitude - startPoint.longitude;
-
-                if( x > 0 && y >= 0){
-                    anglePolar = Math.atan2(x, y);
-                }
-                if( x > 0 && y < 0){
-                    anglePolar = Math.atan2(x, y) + 2 * Math.PI;
-                }
-                if( x < 0){
-                    anglePolar = Math.atan2(x, y) + Math.PI;
-                }
-                if( x == 0 && y > 0){
-                    anglePolar = Math.PI / 2;
-                }
-                if( x == 0 && y < 0){
-                    anglePolar = 3 * Math.PI / 2
-                }
-
-                if( x == 0 && y == 0){
-                    anglePolar = 2000;
-                }
-                if(anglePolar < minAnglePolar){
-                    minAnglePolar = anglePolar;
-                    minAngleIndex = i;
-                }
-            }
-            polyLine.push(new google.maps.LatLng(group.markers[minAngleIndex].location.latitude, group.markers[minAngleIndex].location.longitude));
-            startPoint.latitude = group.markers[minAngleIndex].location.latitude;
-            startPoint.longitude = group.markers[minAngleIndex].location.longitude;
-            minAnglePolar = 2000;
+            coords.push(new google.maps.LatLng(group.markers[i].location.latitude, group.markers[i].location.longitude))
 
         }
-        while(polyLine[polyLine.length - 1].longitude != startPoint.longitude && polyLine[polyLine.length - 1].latitude != startPoint.latitude);
 
-        console.dir(polyLine);
-//        console.dir(startPoint);
+        coords.sort(sortPointY);
+        coords.sort(sortPointX);
+
+        countPoints = chainHull_2D(coords, coords.length, hull);
+        group.hull = [];
+        for(var i = 0; i < hull.length; i++){
+            group.hull.push(hull[i]);
+        }
 
     };
 
@@ -585,7 +515,7 @@
             newMarker.location.longitude = markerForm.find('.marker-longitude')[0].value;
             newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].options[groupItemsSelect[0].selectedIndex].value : idContainer[0].group.id;
             self.saveMarker(newMarker);
-            $(this).closest('.slide').addClass('hidden').removeClass('active-marker-form');
+            $(this).closest('.slide').removeClass('active-marker-form');//.addClass('hidden');
         });
         optionsBlock.on('click', '.remove-marker', function(event){
 
@@ -646,6 +576,7 @@
         markerGroups.on('click', '.remove-group-marker', function(){
 
             self.removeGroupMarker($(this).closest('.marker')[0].marker.groupId,$(this).closest('.marker')[0].marker.id);
+            $(this).closest('.panel')[0].polyCreated = false;
             $(this).closest('.marker').remove();
         });
         markerGroups.on('click', '.panel-heading', function(){
@@ -666,6 +597,39 @@
             console.dir(group);
 
         });
+        markerGroups.on('click','.show-hull', function(){
+            var groupIndex = $(this).closest('.panel')[0].groupIndex;
+
+            if(!$(this).closest('.panel')[0].polyCreated){
+                if(self.groups[groupIndex].groupMapHull){
+                    self.groups[groupIndex].groupMapHull.setMap(null);
+                }
+                self.groups[groupIndex].groupMapHull = new google.maps.Polygon({
+                    paths: self.groups[groupIndex].hull,
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#FF0000",
+                    fillOpacity: 0.35
+                });
+                self.groups[groupIndex].groupMapHull.setMap(self.map);
+                $(this).closest('.panel')[0].polyCreated = true;
+            }
+
+            if($(this).closest('.panel')[0].polyShowed){
+                $(this).closest('.panel')[0].polyShowed = false;
+                self.groups[groupIndex].groupMapHull.setVisible(false);
+            }
+            else{
+                $(this).closest('.panel')[0].polyShowed = true;
+                self.groups[groupIndex].groupMapHull.setVisible(true);
+            }
+
+//            self.createPolygon(self.groups[groupIndex]);
+        });
+
+
+
         ungroupedMarkers.on('click', '.animate-group-marker', function(){
 
             console.dir($(this).closest('.ungrouped-markers').find('.animate-group-marker').index($(this)));
@@ -746,3 +710,5 @@
     var mainController = new MainController();
 
 })(jQuery);
+
+

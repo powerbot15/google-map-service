@@ -33,7 +33,10 @@
 
                                 </a>
                                 <img src="" alt="" class="group-name-icon"/>
-                                <span class="glyphicon glyphicon-minus-sign align-right remove-group" title="Remove"></span>
+                                <span class="align-right">
+                                    <span class="glyphicon glyphicon-polygon show-hull" title="Show(hide) group hull"></span>
+                                    <span class="glyphicon glyphicon-minus-sign remove-group" title="Remove group"></span>
+                                </span>
                             </h4>
                         </div>
                         <div id="collapse1" class="panel-collapse collapse in hidden">
@@ -162,11 +165,7 @@
 </div>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
 <script src="js/lib/bootstrap/dist/js/bootstrap.js"></script>
-<script src="js/lib/underscore/underscore.js"></script>
-<script src="js/lib/backbone/backbone.js"></script>
-<!--<script src="js/eventsAndBehavior/behavior.js"></script>-->
-<!--<script src="js/appConfigAndRun.js"></script>-->
-<!--<script data-main="js/appConfigAndRun.js" src="js/lib/requirejs/require.js"></script>-->
+<script src="js/controller/convexHull.js"></script>
 <script src="js/controller/mainController.js"></script>
 </body>
 
