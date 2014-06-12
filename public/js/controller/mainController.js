@@ -15,9 +15,10 @@
         this.templateParent = $('#accordion');
         this.groupItemParent = $('#marker-group-items');
         this.groupItemTemplate = $('.group-item').eq(0).detach();
-
+        this.activeHulls = {};
+        console.dir(this.activeHulls);
         this.initializeMap();
-        this.constructCroupIconSelect();
+        this.constructGroupIconSelect();
         this.downloadGroups();
 
         this.initializeEventsAndActions();
@@ -25,7 +26,7 @@
 
     };
 
-    MainController.prototype.constructCroupIconSelect = function(){
+    MainController.prototype.constructGroupIconSelect = function(){
         var iconParent = $('.dropdown-menu').eq(0),
             iconTemplate = iconParent.find('li'),
             src = "http://maps.google.com/mapfiles/kml/pal2/icon",
@@ -68,7 +69,6 @@
         })
             .done(function(data) {
                 that.groups = data;
-                console.dir(that);
                 that.getMarkers();
             })
             .fail(function(err){
@@ -107,6 +107,7 @@
                 }
                 for( j = 0; j < that.groups.length; j++){
                     that.createPolygon(that.groups[j]);
+                    that.activeHulls[j] = false;
                 }
                 that.renderGroups();
                 that.renderMarkersInGroups();
@@ -154,16 +155,8 @@
                     data: dataSend
                 })
                     .done(function(data) {
-//                that.markers = data;
-                        var groupElement;
                         console.dir(data);
-//                        dataSend = data;
                         self.renderGroups();
-//                        self.groups.push(newGroup);
-//                        groupElement = self.groupTemplate.eq(0).clone();
-//                        groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)}).html(newGroup.name);
-//                        groupElement.find('.panel-collapse').attr({id: 'collapse' + (self.groups.length-1)});
-//                        self.templateParent.append(groupElement);
                     })
                     .fail(function(err){
                         console.dir(err);
@@ -252,6 +245,7 @@
                         }
 
                         self.groups.splice(i, 1);
+                        delete self.activeHulls[i];
                         break;
                     }
 
@@ -485,6 +479,57 @@
 
     };
 
+    MainController.prototype.showCommonMarkers = function(){
+        var gatheredMarkers = [],
+
+            googleMarkers = [],
+            activeHulls = [];
+
+        for(var groupIndex in this.activeHulls){
+            if(this.activeHulls[groupIndex]){
+                for( var i = 0; i < this.groups[groupIndex].googleMarkers.length; i++){
+                    gatheredMarkers[i] = this.groups[groupIndex].markers[i];
+                    googleMarkers[i] = this.groups[groupIndex].googleMarkers[i];
+//                    gatheredMarkers.push(this.groups[groupIndex].googleMarkers[i]);
+                }
+                activeHulls.push(this.groups[groupIndex].groupMapHull);
+            }
+        }
+        for(var i = 0; i < googleMarkers.length; i++){
+            googleMarkers[i].setVisible(false);
+        }
+
+        for(var i = 0; i < gatheredMarkers.length; i++){
+            var show = true;
+            for(var j = 0; j < activeHulls.length; j++){
+                if(!google.maps.geometry.poly.containsLocation(new google.maps.LatLng(gatheredMarkers[i].location.latitude, gatheredMarkers[i].location.longitude), activeHulls[j])){
+                    show = false;
+                    break;
+                }
+            }
+            if(show){
+                googleMarkers[i].setVisible(true);
+            }
+
+        }
+
+//        for(var j = 0; j < activeHulls.length; j++){
+//            var k = 0;
+//            while(k < gatheredMarkers.length){
+////                var latLng = new google.maps.LatLng(gatheredMarkers[k].position.A, gatheredMarkers[k].position.k);
+//                if(google.maps.geometry.poly.containsLocation(new google.maps.LatLng(gatheredMarkers[k].location.latitude, gatheredMarkers[k].location.longitude), activeHulls[j])){
+////                    googleMarkers[k].setVisible(true);
+//                }
+//                else{
+//                    googleMarkers[k].setVisible(false);
+//                }
+//                k++;
+//            }
+//        }
+
+
+    };
+
     MainController.prototype.initializeEventsAndActions = function(){
 
         var self = this,
@@ -627,9 +672,9 @@
                 });
                 self.groups[groupIndex].groupMapHull.setMap(self.map);
 
-                alert(google.maps.geometry.poly.containsLocation(new google.maps.LatLng(self.groups[groupIndex].markers[0].location.latitude, self.groups[groupIndex].markers[0].location.longitude), self.groups[groupIndex].groupMapHull));
-
-                toggleBounce(self.groups[groupIndex].googleMarkers[0]);
+//                alert(google.maps.geometry.poly.containsLocation(new google.maps.LatLng(self.groups[groupIndex].markers[0].location.latitude, self.groups[groupIndex].markers[0].location.longitude), self.groups[groupIndex].groupMapHull));
+//
+//                toggleBounce(self.groups[groupIndex].googleMarkers[0]);
                 $(this).closest('.panel')[0].polyCreated = true;
                 google.maps.event.addListener(self.groups[groupIndex].groupMapHull, 'click', function(){
                     alert('Hide hull before creating new marker in this place!');
@@ -638,11 +683,15 @@
 
             if($(this).closest('.panel')[0].polyShowed){
                 $(this).closest('.panel')[0].polyShowed = false;
+                self.activeHulls[groupIndex] = false;
                 self.groups[groupIndex].groupMapHull.setVisible(false);
+                self.showCommonMarkers();
             }
             else{
                 $(this).closest('.panel')[0].polyShowed = true;
+                self.activeHulls[groupIndex] = true;
                 self.groups[groupIndex].groupMapHull.setVisible(true);
+                self.showCommonMarkers();
             }
 
 
