@@ -178,8 +178,15 @@
 
     MainController.prototype.saveGroup = function(){
         var newGroup = {},
-            self = this;
-        newGroup.name = $('#group-name')[0].value;
+            self = this,
+            groupNameInput = $('#group-name');
+        groupNameInput.parent().removeClass('has-error');
+        newGroup.name = groupNameInput.get(0).value;
+        if(!newGroup.name){
+            groupNameInput.parent().addClass('has-error');
+            alert('Input group name!');
+            return;
+        }
         newGroup.id = 0;
 //        newGroup.markers = [];
         for(var i = 0; i < self.groups.length; i++){
@@ -203,7 +210,8 @@
                 newGroup.markers = [];
                 self.groups.push(newGroup);
                 groupElement = self.groupTemplate.eq(0).clone();
-                groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)}).html(newGroup.name);
+                groupElement.find('.panel-title>span').eq(0).html(newGroup.name);
+                groupElement.find('.panel-title>a').attr({href :'#collapse' + (self.groups.length-1)});
                 groupElement.find('.panel-title>img')[0].src = newGroup.iconUrl;
                 groupElement.find('.panel-collapse').attr({id: 'collapse' + (self.groups.length-1)});
                 groupElement[0].group = newGroup;
@@ -239,7 +247,10 @@
                                 j++;
                             }
                         }
-                        self.groups[i].groupMapHull.setMap(null);
+                        if(self.groups[i].groupMapHull){
+                            self.groups[i].groupMapHull.setMap(null);
+                        }
+
                         self.groups.splice(i, 1);
                         break;
                     }
@@ -363,7 +374,10 @@
         for(var i = 0; i < this.groups.length; i++){
 //            console.dir(this.groups[i].markers);
             groupElement = this.groupTemplate.eq(0).clone();
-            groupElement.find('.panel-title>a').attr({href :'#collapse' + i}).html(this.groups[i].name);
+            groupElement.find('.panel-title>span').eq(0).html(this.groups[i].name);
+            groupElement.find('.panel-title>a').attr({href :'#collapse' + i});
+
+//            groupElement.find('.panel-title>a').attr({href :'#collapse' + i}).html(this.groups[i].name);
             groupElement.find('.group-name-icon')[0].src = this.groups[i].iconUrl;
             groupElement.find('.panel-collapse').attr({id: 'collapse' + i});
             groupElement[0].group = this.groups[i];
@@ -479,26 +493,26 @@
             ungroupedMarkers = $('.ungrouped-markers');
 
         $('#save-group').on('click', function(){
-            $(this).closest('.slide').addClass('hidden');
+//            $(this).closest('.slide').addClass('hidden');
             self.saveGroup();
         });
 
 
 
-        $('#save-marker').on('click', function(){
-            var newMarker = {
-                description:'',
-                location: {},
-                groupId : 0
-            },
-                groupItemsSelect = $('#marker-group-items')[0];
-            newMarker.description = $('#marker-description')[0].value;
-            newMarker.location.latitude = $('#marker-latitude')[0].value;
-            newMarker.location.longitude = $('#marker-longitude')[0].value;
-            newMarker.groupId = groupItemsSelect.options[groupItemsSelect.selectedIndex].value;
-            $(this).closest('.slide').addClass('hidden');
-            self.saveMarker(newMarker);
-        });
+//        $('#save-marker').on('click', function(){
+//            var newMarker = {
+//                description:'',
+//                location: {},
+//                groupId : 0
+//            },
+//                groupItemsSelect = $('#marker-group-items')[0];
+//            newMarker.description = $('#marker-description')[0].value;
+//            newMarker.location.latitude = $('#marker-latitude')[0].value;
+//            newMarker.location.longitude = $('#marker-longitude')[0].value;
+//            newMarker.groupId = groupItemsSelect.options[groupItemsSelect.selectedIndex].value;
+//            $(this).closest('.slide').addClass('hidden');
+//            self.saveMarker(newMarker);
+//        });
 
         optionsBlock.on('click', '.save-marker', function(){
             var newMarker = {
@@ -510,9 +524,32 @@
                 markerForm = $('.active-marker-form'),
                 idContainer = eventTarget.closest('.panel-default'),
                 groupItemsSelect = markerForm.find('#marker-group-items');
+
+
+            markerForm.find('.marker-description').parent().removeClass('has-error');
+            markerForm.find('.marker-latitude').parent().removeClass('has-error');
+            markerForm.find('.marker-longitude').parent().removeClass('has-error');
+
+
+
             newMarker.description = markerForm.find('.marker-description')[0].value;
+
+            if(!newMarker.description){
+                markerForm.find('.marker-description').parent().addClass('has-error');
+                alert('Input marker description!');
+                return;
+            }
+
             newMarker.location.latitude = markerForm.find('.marker-latitude')[0].value;
             newMarker.location.longitude = markerForm.find('.marker-longitude')[0].value;
+
+            if(!newMarker.location.latitude || !newMarker.location.longitude){
+                markerForm.find('.marker-latitude').parent().addClass('has-error');
+                markerForm.find('.marker-longitude').parent().addClass('has-error');
+                alert('Click on map to accept coordinates!');
+                return;
+            }
+
             newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].options[groupItemsSelect[0].selectedIndex].value : idContainer[0].group.id;
             self.saveMarker(newMarker);
             $(this).closest('.slide').removeClass('active-marker-form');//.addClass('hidden');
@@ -530,43 +567,6 @@
             $(this).closest('.marker').remove();
 
         });
-
-//        optionsBlock.on('click', '.show-hide-group', function(event){
-////            for()
-//            var panel = $(this).closest('.panel');
-//            if(!panel.find('.collapse').hasClass('in')){
-//                for(var i = 0; i < self.groups.length; i++){
-//                    for(var j = 0; j < self.groups[i].googleMarkers.length; j++){
-//                        if(!self.groups[i].googleMarkers[j].shown){
-//                            self.groups[i].googleMarkers[j].setVisible(false);
-//                            self.groups[i].googleMarkers[j].shown = false;
-//                        }
-//                    }
-//                }
-//                for(var k = 0; k < self.groups[panel[0].groupIndex].googleMarkers.length; k++){
-//                    self.groups[panel[0].groupIndex].googleMarkers[k].setVisible(true);
-//                    self.groups[panel[0].groupIndex].googleMarkers[k].shown = true;
-//                }
-//
-//            }
-//            else{
-////                if($('.options .collapse').hasClass('in')){
-//                for(var k = 0; k < self.groups[panel[0].groupIndex].googleMarkers.length; k++){
-//                    self.groups[panel[0].groupIndex].googleMarkers[k].setVisible(false);
-//                    self.groups[panel[0].groupIndex].googleMarkers[k].shown = false;
-//                }
-//
-//            }
-//            if($('.options').find('.collapsed').length === self.groups.length){
-//                for(var i = 0; i < self.groups.length; i++){
-//                        for(var j = 0; j < self.groups[i].googleMarkers.length; j++){
-//                            self.groups[i].googleMarkers[j].setVisible(true);
-//                        }
-//                }
-//            }
-//
-////            console.dir(this);
-//        });
 
 
         markerGroups.on('click', '.remove-group', function(){
@@ -597,6 +597,19 @@
             console.dir(group);
 
         });
+        markerGroups.on('click', '.show-hide-group', function(event){
+            var buttonUpDown = $(this);
+
+            if(buttonUpDown.hasClass('glyphicon-chevron-down')){
+                buttonUpDown.removeClass('glyphicon-chevron-down');
+                buttonUpDown.addClass('glyphicon-chevron-up');
+            }
+            else{
+                buttonUpDown.addClass('glyphicon-chevron-down');
+                buttonUpDown.removeClass('glyphicon-chevron-up');
+            }
+
+        });
         markerGroups.on('click','.show-hull', function(){
             var groupIndex = $(this).closest('.panel')[0].groupIndex;
 
@@ -613,7 +626,14 @@
                     fillOpacity: 0.35
                 });
                 self.groups[groupIndex].groupMapHull.setMap(self.map);
+
+                alert(google.maps.geometry.poly.containsLocation(new google.maps.LatLng(self.groups[groupIndex].markers[0].location.latitude, self.groups[groupIndex].markers[0].location.longitude), self.groups[groupIndex].groupMapHull));
+
+                toggleBounce(self.groups[groupIndex].googleMarkers[0]);
                 $(this).closest('.panel')[0].polyCreated = true;
+                google.maps.event.addListener(self.groups[groupIndex].groupMapHull, 'click', function(){
+                    alert('Hide hull before creating new marker in this place!');
+                });
             }
 
             if($(this).closest('.panel')[0].polyShowed){
@@ -624,6 +644,7 @@
                 $(this).closest('.panel')[0].polyShowed = true;
                 self.groups[groupIndex].groupMapHull.setVisible(true);
             }
+
 
 //            self.createPolygon(self.groups[groupIndex]);
         });

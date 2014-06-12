@@ -28,14 +28,15 @@
                     <div class="panel panel-default hidden">
                         <div class="panel-heading relative">
                             <h4 class="panel-title">
-                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse1" class = "show-hide-group">
-                                    Group name
+                                <span>Group name</span>
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse1" class="glyphicon glyphicon-chevron-down show-hide-group">
 
                                 </a>
                                 <img src="" alt="" class="group-name-icon"/>
+
                                 <span class="align-right">
-                                    <span class="glyphicon glyphicon-polygon show-hull" title="Show(hide) group hull"></span>
-                                    <span class="glyphicon glyphicon-minus-sign remove-group" title="Remove group"></span>
+                                    <a class="glyphicon glyphicon-polygon show-hull" title="Show(hide) group hull"></a>
+                                    <a class="glyphicon glyphicon-minus-sign remove-group" title="Remove group"></a>
                                 </span>
                             </h4>
                         </div>
@@ -44,8 +45,8 @@
                                 <div class="marker relative">
                                     <span class="description"></span>
                                     <span class="align-right">
-                                        <span class="glyphicon glyphicon-map-marker animate-group-marker" title="Show on the map"></span>
-                                        <span class="glyphicon glyphicon-minus-sign remove-group-marker" title="Remove"></span>
+                                        <a class="glyphicon glyphicon-map-marker animate-group-marker" title="Show on the map"></a>
+                                        <a class="glyphicon glyphicon-minus-sign remove-group-marker" title="Remove"></a>
                                     </span>
                                 </div>
                             </div>
@@ -163,9 +164,10 @@
 
     </div>
 </div>
-<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=geometry&sensor=false"></script>
 <script src="js/lib/bootstrap/dist/js/bootstrap.js"></script>
 <script src="js/controller/convexHull.js"></script>
+<script src="js/controller/maps.google.polygon.containsLatLng.js"></script>
 <script src="js/controller/mainController.js"></script>
 </body>
 

@@ -96,6 +96,7 @@ body{
 }
 .remove-group, .remove-group-marker, .animate-group-marker, .show-hull{
     cursor: pointer;
+    text-decoration: none;
 }
 .marker{
     margin: 3px 5px 3px 20px;
@@ -121,4 +122,30 @@ body{
     height: 20px;
     background-size: contain;
     background-position: center;
+}
+.panel{
+    padding: 5px;
+}
+.show-hide-group{
+    position: absolute;
+    display: block;
+    width: 20px;
+    height: 20px;
+    top:40px;
+    bottom: 0;
+    left: 50%;
+    margin-left: -7px;
+    cursor: pointer;
+}
+.show-hide-group:hover{
+    color: #008800;
+}
+.glyphicon:before{
+    text-decoration: none !important;
+}
+.glyphicon:before:hover{
+    text-decoration: none !important;
+}
+.glyphicon{
+    text-decoration: none !important;
 }
