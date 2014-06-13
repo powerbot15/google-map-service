@@ -10,13 +10,18 @@
         this.googleMarkers = [];
         this.ungroupedMarkersParent = $('.ungrouped-markers').eq(0);
         this.ungroupedMarkerTemplate = this.ungroupedMarkersParent.find('.marker').eq(0);
+
         this.ungroupedMarkerTemplate.remove();
         this.groupTemplate = $('.panel-default').eq(0).detach().removeClass('hidden');
+        this.groupedMarkerTemplate = this.groupTemplate.find('.marker').eq(0).clone();
         this.templateParent = $('#accordion');
         this.groupItemParent = $('#marker-group-items');
         this.groupItemTemplate = $('.group-item').eq(0).detach();
-        this.activeHulls = {};
+        this.activeHulls = [];
+        this.hullPalette = ['#c925ff', '#4267e9', '#01c9e2','#8c0000', '#777873', '#fec619', '#ff7f00', '#222222', '#ff4d4d', '#59b200', '#c925ff', '#4267e9', '#01c9e2','#8c0000', '#777873', '#fec619', '#ff7f00', '#222222', '#ff4d4d', '#59b200'];
         console.dir(this.activeHulls);
+
+
         this.initializeMap();
         this.constructGroupIconSelect();
         this.downloadGroups();
@@ -55,8 +60,10 @@
         this.map = new google.maps.Map($('.map-container')[0], mapOptions);
 
         google.maps.event.addListener(this.map, 'click', function(event) {
-            $('.active-marker-form .marker-latitude')[0].value = event.latLng.k;
-            $('.active-marker-form .marker-longitude')[0].value = event.latLng.A;
+            if($('.active-marker-form').length > 0){
+                $('.active-marker-form .marker-latitude')[0].value = event.latLng.k;
+                $('.active-marker-form .marker-longitude')[0].value = event.latLng.A;
+            }
         });
 
     };
@@ -288,7 +295,7 @@
         }).done(function(data){});
     };
 
-    MainController.prototype.saveMarker = function(marker){
+    MainController.prototype.saveMarker = function(marker, markerContainer){
 
         var newMarker = marker,
             self = this;
@@ -324,7 +331,9 @@
 
 //                            self.updateGroup(self.groups[i].id);
                             self.createPolygon(self.groups[i]);
-                            self.renderGroups();
+                            self.renderMarkersInGroup(markerContainer, i);
+//                            self.renderGroups();
+
                             break;
                         }
                     }
@@ -432,6 +441,23 @@
 
     };
 
+    MainController.prototype.renderMarkersInGroup = function(container, groupIndex){
+        var markerTemplate, markerTemplateParent, markerTemplateInsert;
+        markerTemplate = this.groupedMarkerTemplate;
+//        markerTemplate.remove();
+        markerTemplateParent = container;
+        markerTemplateParent.empty();
+
+        for(var j = 0; j < this.groups[groupIndex].markers.length; j++){
+
+            markerTemplateInsert = markerTemplate.clone();
+            markerTemplateInsert.find('.description').html(this.groups[groupIndex].markers[j].description);
+            markerTemplateInsert[0].marker = this.groups[groupIndex].markers[j];
+            markerTemplateParent.append(markerTemplateInsert);
+        }
+
+    };
+
     MainController.prototype.renderMarkers = function(){
 
         this.ungroupedMarkersParent.empty();
@@ -485,11 +511,11 @@
             googleMarkers = [],
             activeHulls = [];
 
-        for(var groupIndex in this.activeHulls){
+        for(var groupIndex = 0; groupIndex < this.activeHulls.length; groupIndex++){
             if(this.activeHulls[groupIndex]){
                 for( var i = 0; i < this.groups[groupIndex].googleMarkers.length; i++){
-                    gatheredMarkers[i] = this.groups[groupIndex].markers[i];
-                    googleMarkers[i] = this.groups[groupIndex].googleMarkers[i];
+                    gatheredMarkers.push(this.groups[groupIndex].markers[i]);
+                    googleMarkers.push(this.groups[groupIndex].googleMarkers[i]);
 //                    gatheredMarkers.push(this.groups[groupIndex].googleMarkers[i]);
                 }
                 activeHulls.push(this.groups[groupIndex].groupMapHull);
@@ -512,20 +538,6 @@
             }
 
         }
-
-//        for(var j = 0; j < activeHulls.length; j++){
-//            var k = 0;
-//            while(k < gatheredMarkers.length){
-////                var latLng = new google.maps.LatLng(gatheredMarkers[k].position.A, gatheredMarkers[k].position.k);
-//                if(google.maps.geometry.poly.containsLocation(new google.maps.LatLng(gatheredMarkers[k].location.latitude, gatheredMarkers[k].location.longitude), activeHulls[j])){
-////                    googleMarkers[k].setVisible(true);
-//                }
-//                else{
-//                    googleMarkers[k].setVisible(false);
-//                }
-//                k++;
-//            }
-//        }
 
 
     };
@@ -568,7 +580,8 @@
                 eventTarget = $(this),
                 markerForm = $('.active-marker-form'),
                 idContainer = eventTarget.closest('.panel-default'),
-                groupItemsSelect = markerForm.find('#marker-group-items');
+                groupItemsSelect = markerForm.find('#marker-group-items'),
+                markerContainer = idContainer.find('.panel-body').eq(0);
 
 
             markerForm.find('.marker-description').parent().removeClass('has-error');
@@ -596,9 +609,16 @@
             }
 
             newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].options[groupItemsSelect[0].selectedIndex].value : idContainer[0].group.id;
-            self.saveMarker(newMarker);
-            $(this).closest('.slide').removeClass('active-marker-form');//.addClass('hidden');
+            $(this).closest('.panel')[0].polyCreated = false;
+            self.saveMarker(newMarker, markerContainer);
+            markerForm.find('.marker-description')[0].value = '';
+            markerForm.find('.marker-latitude')[0].value = '';
+            markerForm.find('.marker-longitude')[0].value = '';
+
+//            $(this).closest('.slide');//.removeClass('active-marker-form');//.addClass('hidden');
         });
+
+
         optionsBlock.on('click', '.remove-marker', function(event){
 
             var markerId = $(this).closest('.marker')[0].marker.id;
@@ -618,16 +638,22 @@
             self.removeGroup($(this).closest('.panel-default')[0].group.id);
 
         });
+
+
         markerGroups.on('click', '.remove-group-marker', function(){
 
             self.removeGroupMarker($(this).closest('.marker')[0].marker.groupId,$(this).closest('.marker')[0].marker.id);
             $(this).closest('.panel')[0].polyCreated = false;
             $(this).closest('.marker').remove();
         });
+
+
         markerGroups.on('click', '.panel-heading', function(){
             $(this.parentNode).find('.panel-collapse').removeClass('hidden');
 
         });
+
+
         markerGroups.on('click', '.animate-group-marker', function(){
 
             console.dir($(this).closest('.panel-body').find('.animate-group-marker').index($(this)));
@@ -642,6 +668,8 @@
             console.dir(group);
 
         });
+
+
         markerGroups.on('click', '.show-hide-group', function(event){
             var buttonUpDown = $(this);
 
@@ -655,19 +683,28 @@
             }
 
         });
-        markerGroups.on('click','.show-hull', function(){
-            var groupIndex = $(this).closest('.panel')[0].groupIndex;
 
+
+        markerGroups.on('click','.show-hull', function(){
+            var groupIndex = $(this).closest('.panel')[0].groupIndex,
+                hullColor;
+            if(self.groups[groupIndex].markers.length < 3){
+                alert('For the hull of this group needed at least three markers!');
+                return;
+            }
             if(!$(this).closest('.panel')[0].polyCreated){
                 if(self.groups[groupIndex].groupMapHull){
                     self.groups[groupIndex].groupMapHull.setMap(null);
                 }
+
+                hullColor = groupIndex > 20 ? self.hullPalette[groupIndex % 20] : self.hullPalette[groupIndex];
+
                 self.groups[groupIndex].groupMapHull = new google.maps.Polygon({
                     paths: self.groups[groupIndex].hull,
-                    strokeColor: "#FF0000",
+                    strokeColor: hullColor,
                     strokeOpacity: 0.8,
                     strokeWeight: 2,
-                    fillColor: "#FF0000",
+                    fillColor: hullColor,
                     fillOpacity: 0.35
                 });
                 self.groups[groupIndex].groupMapHull.setMap(self.map);
@@ -685,15 +722,18 @@
                 $(this).closest('.panel')[0].polyShowed = false;
                 self.activeHulls[groupIndex] = false;
                 self.groups[groupIndex].groupMapHull.setVisible(false);
-                self.showCommonMarkers();
+                for(var i = 0; i < self.groups[groupIndex].googleMarkers.length; i++){
+                    self.groups[groupIndex].googleMarkers[i].setVisible(true);
+                }
+                this.style.backgroundColor = 'inherit';
             }
             else{
                 $(this).closest('.panel')[0].polyShowed = true;
                 self.activeHulls[groupIndex] = true;
                 self.groups[groupIndex].groupMapHull.setVisible(true);
-                self.showCommonMarkers();
+                this.style.backgroundColor = 'red';
             }
-
+            self.showCommonMarkers();
 
 //            self.createPolygon(self.groups[groupIndex]);
         });
@@ -750,10 +790,12 @@
             var slideContent = $(this).parent().find('.slide');
             if(slideContent.hasClass('hidden')){
                 slideContent.removeClass('hidden').addClass('active-marker-form');
+                $(this).find('.glyphicon').removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
 
             }
             else{
                 slideContent.addClass('hidden').removeClass('active-marker-form');
+                $(this).find('.glyphicon').removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
             }
         });
 
