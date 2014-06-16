@@ -8,9 +8,10 @@
         this.groups = [];
         this.markers = [];
         this.googleMarkers = [];
+        this.infoWindow = {};
+        this.infoWindowContent = $('.info-window-template').eq(0).detach();
         this.ungroupedMarkersParent = $('.ungrouped-markers').eq(0);
         this.ungroupedMarkerTemplate = this.ungroupedMarkersParent.find('.marker').eq(0);
-
         this.ungroupedMarkerTemplate.remove();
         this.groupTemplate = $('.panel-default').eq(0).detach().removeClass('hidden');
         this.groupedMarkerTemplate = this.groupTemplate.find('.marker').eq(0).clone();
@@ -56,14 +57,22 @@
             center: new google.maps.LatLng(49.4333300, 32.0666700),
             zoom: 13,
             mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-        this.map = new google.maps.Map($('.map-container')[0], mapOptions);
+        },
+            self = this;
+        self.map = new google.maps.Map($('.map-container')[0], mapOptions);
 
         google.maps.event.addListener(this.map, 'click', function(event) {
             if($('.active-marker-form').length > 0){
+                self.infoWindow.close();
                 $('.active-marker-form .marker-latitude')[0].value = event.latLng.k;
                 $('.active-marker-form .marker-longitude')[0].value = event.latLng.A;
             }
+        });
+
+        this.infoWindow = new google.maps.InfoWindow({
+            content: '',
+            maxWidth: 300,
+            maxHeight:400
         });
 
     };
@@ -102,11 +111,13 @@
                 //
                 for(var i = 0; i < receivedMarkers.length; i++){
                     if(receivedMarkers[i].groupId == 'none'){
+                        receivedMarkers[i].index = that.markers.length;
                         that.markers.push(receivedMarkers[i]);
                         continue;
                     }
                     for(var j = 0; j < that.groups.length; j++){
                         if(that.groups[j].id == receivedMarkers[i].groupId){
+                            receivedMarkers[i].index = that.groups[j].markers.length;
                             that.groups[j].markers.push(receivedMarkers[i]);
                             break;
                         }
@@ -140,9 +151,19 @@
                 });
             marker.groupId = self.markers[i].groupId;
             marker.id = self.markers[i].id;
+            marker.index = i;
             self.googleMarkers.push(marker);
+            google.maps.event.addListener(marker, 'click', function() {
+
+                self.infoWindowContent.find('.info-group-name').eq(0).html('Ungrouped marker');
+                self.infoWindowContent.find('.info-marker-description').html(self.markers[this.index].description);
+                self.infoWindow.setContent(self.infoWindowContent.html());
+                self.infoWindow.open(self.map, this);
+                self.map.panTo(this.position);
+
+            });
+
         }
-        console.dir(self);
         self.renderMarkers();
     };
 
@@ -267,21 +288,32 @@
 
     };
 
-    MainController.prototype.removeGroupMarker = function(groupId, markerId){
+    MainController.prototype.removeGroupMarker = function(groupId, markerId, index){
         this.removeMarker(markerId);
         for(var i = 0; i < this.groups.length; i++){
             if(this.groups[i].id == groupId){
 
-                for(var j = 0; j < this.groups[i].markers.length; j++){
-                    if(this.groups[i].markers[j].id == markerId){
-                        this.groups[i].markers.splice(j, 1);
-                        this.groups[i].googleMarkers[j].setMap(null);
-                        this.groups[i].googleMarkers.splice(j, 1);
-//                        this.renderGroups();
-                        this.createPolygon(this.groups[i]);
-                        return;
-                    }
+                this.groups[i].markers.splice(index, 1);
+                this.groups[i].googleMarkers[index].setMap(null);
+                this.groups[i].googleMarkers.splice(index, 1);
+
+                for(var j = index; j < this.groups[i].markers.length; j++){
+                    this.groups[i].markers[j].index = j;
+                    this.groups[i].googleMarkers[j].index = j;
                 }
+                this.createPolygon(this.groups[i]);
+                return;
+//                for(var j = 0; j < this.groups[i].markers.length; j++){
+//                    if(this.groups[i].markers[j].id == markerId){
+//                        this.groups[i].markers.splice(j, 1);
+//                        this.groups[i].googleMarkers[j].setMap(null);
+//                        this.groups[i].googleMarkers.splice(j, 1);
+//
+////                        this.renderGroups();
+//                        this.createPolygon(this.groups[i]);
+//                        return;
+//                    }
+//                }
 
             }
         }
@@ -316,7 +348,7 @@
                         if(newMarker.groupId == self.groups[i].id){
                             if(!self.groups[i].markers){self.groups[i].markers = []}
                             if(!self.groups[i].googleMarkers){self.groups[i].googleMarkers = []}
-
+                            newMarker.index = self.groups[i].markers.length;
                             self.groups[i].markers.push(newMarker);
                             myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude);
                             marker = new google.maps.Marker({
@@ -326,13 +358,21 @@
                                     icon: self.groups[i].iconUrl
                                 });
                             marker.groupId = newMarker.groupId;
-                            marker.id = newMarker.id;
+                            marker.groupIndex = i;
+                            marker.index = self.groups[i].googleMarkers.length;
                             self.groups[i].googleMarkers.push(marker);
+                            google.maps.event.addListener(marker, 'click', function() {
 
-//                            self.updateGroup(self.groups[i].id);
+                                self.infoWindowContent.find('.info-group-name').eq(0).html(self.groups[this.groupIndex].name);
+                                self.infoWindowContent.find('.info-marker-description').html(self.groups[this.groupIndex].markers[this.index].description);
+                                self.infoWindow.setContent(self.infoWindowContent.html());
+                                self.infoWindow.open(self.map, this);
+                                self.map.panTo(this.position);
+
+                            });
+
                             self.createPolygon(self.groups[i]);
                             self.renderMarkersInGroup(markerContainer, i);
-//                            self.renderGroups();
 
                             break;
                         }
@@ -342,6 +382,7 @@
 
                 }
                 else{
+                    newMarker.index = self.markers.length;
                     self.markers.push(newMarker);
                     self.renderMarkers();
                     myLatitudeLongitude = new google.maps.LatLng( newMarker.location.latitude, newMarker.location.longitude);
@@ -351,8 +392,19 @@
                             title:newMarker.description
                         });
                     marker.groupId = newMarker.groupId;
+                    marker.index = self.googleMarkers.length;
                     marker.id = newMarker.id;
                     self.googleMarkers.push(marker);
+
+                    google.maps.event.addListener(marker, 'click', function() {
+
+                        self.infoWindowContent.find('.info-group-name').eq(0).html('Ungrouped marker');
+                        self.infoWindowContent.find('.info-marker-description').html(self.markers[this.index].description);
+                        self.infoWindow.setContent(self.infoWindowContent.html());
+                        self.infoWindow.open(self.map, this);
+                        self.map.panTo(this.position);
+
+                    });
                 }
                 console.dir(newMarker);
                 console.dir(self.googleMarkers);
@@ -413,7 +465,7 @@
 
     MainController.prototype.renderMarkersInGroups = function(){
         var myLatitudeLongitude,
-            marker,
+
             self = this;
         for(var i = 0; i < self.groups.length; i++){
 
@@ -423,6 +475,7 @@
 
             for(var j = 0; j < self.groups[i].markers.length; j++){
 
+                var marker = {};
                 myLatitudeLongitude = new google.maps.LatLng( self.groups[i].markers[j].location.latitude, self.groups[i].markers[j].location.longitude);
                 marker = new google.maps.Marker({
                     position: myLatitudeLongitude,
@@ -432,8 +485,20 @@
 
                 });
                 marker.groupId = self.groups[i].markers[j].groupId;
+                marker.groupIndex = i;
                 marker.id = self.groups[i].markers[j].id;
+                marker.index = self.groups[i].googleMarkers.length;
                 self.groups[i].googleMarkers.push(marker);
+
+                google.maps.event.addListener(marker, 'click', function() {
+
+                    self.infoWindowContent.find('.info-group-name').eq(0).html(self.groups[this.groupIndex].name);
+                    self.infoWindowContent.find('.info-marker-description').html(self.groups[this.groupIndex].markers[this.index].description);
+                    self.infoWindow.setContent(self.infoWindowContent.html());
+                    self.infoWindow.open(self.map, this);
+                    self.map.panTo(this.position);
+
+                });
 
             }
 
@@ -609,7 +674,10 @@
             }
 
             newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].options[groupItemsSelect[0].selectedIndex].value : idContainer[0].group.id;
-            $(this).closest('.panel')[0].polyCreated = false;
+            if(!newMarker.groupId == 'none'){
+                $(this).closest('.panel')[0].polyCreated = false;
+            }
+
             self.saveMarker(newMarker, markerContainer);
             markerForm.find('.marker-description')[0].value = '';
             markerForm.find('.marker-latitude')[0].value = '';
@@ -641,8 +709,8 @@
 
 
         markerGroups.on('click', '.remove-group-marker', function(){
-
-            self.removeGroupMarker($(this).closest('.marker')[0].marker.groupId,$(this).closest('.marker')[0].marker.id);
+            var marker = $(this).closest('.marker')[0].marker;
+            self.removeGroupMarker(marker.groupId, marker.id, marker.index);
             $(this).closest('.panel')[0].polyCreated = false;
             $(this).closest('.marker').remove();
         });
@@ -661,6 +729,7 @@
                 markerIndex = $(this).closest('.panel-body').find('.animate-group-marker').index($(this));
 //            var markerId = group.markers[markerIndex].id;
             toggleBounce(group.googleMarkers[markerIndex]);
+//            self.map.panTo(group.googleMarkers[markerIndex].position);
             setTimeout(function(){
                 toggleBounce(group.googleMarkers[markerIndex]);
             }, 2500);
@@ -746,6 +815,7 @@
             var markerIndex = $(this).closest('.ungrouped-markers').find('.animate-group-marker').index($(this));
             console.dir(self);
             toggleBounce(self.googleMarkers[markerIndex]);
+//            self.map.panTo(self.googleMarkers[markerIndex].position);
             setTimeout(function(){
                 toggleBounce(self.googleMarkers[markerIndex]);
             }, 2500);

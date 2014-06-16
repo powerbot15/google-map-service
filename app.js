@@ -25,9 +25,10 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback () {
     console.log('DB connected');
 });
-
+app.db = db;
 port = nconf.get('port');
 app.listen(port, function(){
     console.log('Server started :' + port);
 });
+return app;
 
