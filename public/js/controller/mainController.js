@@ -63,10 +63,10 @@
 
         google.maps.event.addListener(this.map, 'click', function(event) {
             if($('.active-marker-form').length > 0){
-                self.infoWindow.close();
                 $('.active-marker-form .marker-latitude')[0].value = event.latLng.k;
                 $('.active-marker-form .marker-longitude')[0].value = event.latLng.A;
             }
+            self.infoWindow.close();
         });
 
         this.infoWindow = new google.maps.InfoWindow({
@@ -855,6 +855,7 @@
 
                 this.shown = true
             }
+//            google.maps.event.trigger(self.map, 'resize');
         });
         $('body').on('click', '.btn-slide', function(event){
             var slideContent = $(this).parent().find('.slide');
