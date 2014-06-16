@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/powerbot15/google-map-service/issues"
   },
-  "homepage": "https://github.com/powerbot15/google-map-service"
+  "homepage": "https://github.com/powerbot15/google-map-service",
+  "directories": {
+    "test": "tests"
+  }
 }
