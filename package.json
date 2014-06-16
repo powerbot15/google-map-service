@@ -10,7 +10,8 @@
     "express-session": "~1.2.1",
     "mongoose": "~3.8.12",
     "mpromise": "^0.5.1",
-    "nconf": "~0.6.9"
+    "nconf": "~0.6.9",
+    "supertest": "^0.13.0"
   },
   "devDependencies": {},
   "scripts": {

@@ -729,7 +729,7 @@
                 markerIndex = $(this).closest('.panel-body').find('.animate-group-marker').index($(this));
 //            var markerId = group.markers[markerIndex].id;
             toggleBounce(group.googleMarkers[markerIndex]);
-//            self.map.panTo(group.googleMarkers[markerIndex].position);
+            self.map.panTo(group.googleMarkers[markerIndex].position);
             setTimeout(function(){
                 toggleBounce(group.googleMarkers[markerIndex]);
             }, 2500);
@@ -815,7 +815,7 @@
             var markerIndex = $(this).closest('.ungrouped-markers').find('.animate-group-marker').index($(this));
             console.dir(self);
             toggleBounce(self.googleMarkers[markerIndex]);
-//            self.map.panTo(self.googleMarkers[markerIndex].position);
+            self.map.panTo(self.googleMarkers[markerIndex].position);
             setTimeout(function(){
                 toggleBounce(self.googleMarkers[markerIndex]);
             }, 2500);
@@ -855,7 +855,10 @@
 
                 this.shown = true
             }
-//            google.maps.event.trigger(self.map, 'resize');
+            setTimeout(function(){
+                google.maps.event.trigger(self.map, 'resize');
+            }, 600);
+
         });
         $('body').on('click', '.btn-slide', function(event){
             var slideContent = $(this).parent().find('.slide');
