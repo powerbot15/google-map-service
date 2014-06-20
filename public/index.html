@@ -28,17 +28,15 @@
                     <div class="panel panel-default hidden">
                         <div class="panel-heading relative">
                             <h4 class="panel-title">
-                                <span>Group name</span>
-                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse1" class="glyphicon glyphicon-chevron-down show-hide-group">
-
-                                </a>
-                                <img src="" alt="" class="group-name-icon"/>
-
+                                    <span class="group-name">Group name</span>
+                                    <img src="" alt="" class="group-name-icon"/>
                                 <span class="align-right">
                                     <a class="glyphicon glyphicon-polygon show-hull" title="Show(hide) group hull"></a>
+                                    <a class="glyphicon glyphicon-pencil edit-group" title="Edit group"></a>
                                     <a class="glyphicon glyphicon-minus-sign remove-group" title="Remove group"></a>
                                 </span>
                             </h4>
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapse1" class="glyphicon glyphicon-chevron-down show-hide-group"></a>
                         </div>
                         <div id="collapse1" class="panel-collapse collapse in hidden">
                             <div class="panel-body">
@@ -46,6 +44,7 @@
                                     <span class="description"></span>
                                     <span class="align-right">
                                         <a class="glyphicon glyphicon-map-marker animate-group-marker" title="Show on the map"></a>
+                                        <a class="glyphicon glyphicon-pencil edit-marker" title="Edit marker"></a>
                                         <a class="glyphicon glyphicon-minus-sign remove-group-marker" title="Remove"></a>
                                     </span>
                                 </div>
@@ -77,7 +76,7 @@
                     </div>
                 </div>
                 <hr/>
-                <div>
+                <div class="new-group-container">
                     <div class="btn btn-primary btn-block btn-slide">
                         <span class="glyphicon glyphicon-plus-sign"></span> New Group
                     </div>
@@ -120,6 +119,7 @@
                         <span class="description"></span>
                                     <span class="align-right">
                                         <a class="glyphicon glyphicon-map-marker animate-group-marker" title="Show on the map"></a>
+                                        <a class="glyphicon glyphicon-pencil edit-marker" title="Edit marker"></a>
                                         <a class="glyphicon glyphicon-minus-sign remove-marker" title="Remove"></a>
                                     </span>
                     </div>

@@ -65,6 +65,7 @@ body{
 }
 .manage-markers-menu:hover{
     box-shadow: 0 0 10px rgba(150,0,0,1);
+    color: rgba(150,0,0,1);
 }
 .tab-content{
     border-left: 1px solid lightgray;
@@ -94,17 +95,24 @@ body{
     right: 5px;
     top:5px;
 }
-.remove-group, .remove-group-marker, .animate-group-marker, .show-hull{
+.remove-group, .remove-group-marker, .edit-marker, .animate-group-marker, .show-hull{
     cursor: pointer;
     text-decoration: none;
 }
+.remove-group:hover, .remove-group-marker:hover, .edit-marker:hover, .animate-group-marker:hover, .show-hull:hover{
+    color:red
+}
 .marker{
-    margin: 3px 5px 3px 20px;
+    margin: 3px 5px 3px 5px;
     padding: 5px;
     border-radius: 8px;
     background-color: #C5F8AA;/*#A5EA00;/*#DECCEC;*/
     color: #194CFF;
-
+}
+.description{
+    /*margin-right: 75px;*/
+    display:inline-block;
+    padding-right: 60px;
 }
 .must-scroll{
     max-height: 400px;
@@ -132,8 +140,9 @@ body{
     display: block;
     width: 20px;
     height: 20px;
-    top:40px;
-    bottom: 0;
+    top: inherit !important;
+    /*top:97%;*/
+    bottom: -5px;
     left: 50%;
     margin-left: -7px;
     cursor: pointer;
@@ -149,4 +158,22 @@ body{
 }
 .glyphicon{
     text-decoration: none !important;
+}
+.error{
+    border: 2px solid red;
+    color:red;
+}
+.error-menu{
+    color:red;
+}
+.transition{
+    -webkit-transition: border 2s linear 0s;
+    -moz-transition: border 2s linear 0s;
+    -ms-transition: border 2s linear 0s;
+    -o-transition: border 2s linear 0s;
+    transition: border 2s linear 0s;
+
+}
+.panel-title{
+    padding-right:50px;
 }

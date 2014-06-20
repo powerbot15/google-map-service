@@ -10,33 +10,51 @@ var MarkersController = function(){
 
 
 MarkersController.prototype.saveGroup = function(request, response){
-    console.log('save group request');
-    var newGroup = new MarkersGroup({
-        name : request.param('name'),
-        id : null,
-//        markers: request.param('markers') || [],
-        user:'anonymous',
-        iconUrl: request.param('iconUrl')
-    });
-    newGroup.id = newGroup._id;
-    newGroup.save(function(err, group){
-        if(err){
-            console.error(err);
-            response.status(500);
-            response.send('Did not saved');
-            return false;
-        }
-        if(group){
-//            marker.id = marker._id;
-            response.send(group);
-        }
+    var date = new Date();
+    console.log(request.param('id'));
 
-    });
+    if(request.param('id') != 0){
+        console.log('update group id:' + request.param('id') +  ' request ' + date.toDateString() + ' ' + date.toTimeString());
+        MarkersGroup.findOneAndUpdate({id : request.param('id')}, { $set: {name : request.param('name'), iconUrl : request.param('iconUrl')}}, function(err, group){
+            if(err){
+                console.error(err);
+                response.status(500);
+                response.send('Did not updated');
+                return false;
+            }
+            if(group){
+                response.send(group);
+            }
+        });
+    }
+    else{
+        console.log('save group request ' + date.toDateString() + ' ' + date.toTimeString());
+        var newGroup = new MarkersGroup({
+            name : request.param('name'),
+            id : 0,
+            user:'anonymous',
+            iconUrl: request.param('iconUrl')
+        });
+        newGroup.id = newGroup._id;
+        newGroup.save(function(err, group){
+            if(err){
+                console.error(err);
+                response.status(500);
+                response.send('Did not saved');
+                return false;
+            }
+            if(group){
+                response.send(group);
+            }
+
+        });
+    }
 
 };
 
 MarkersController.prototype.removeGroup = function(request, response){
-    console.log('request remove group');
+    var date = new Date();
+    console.log('request remove group '  + date.toDateString() + ' ' + date.toTimeString());
     MarkersGroup.remove({id : request.param('id')}, function(err){
         if(!err){
             Marker.remove({groupId : request.param('id')}, function(err){
@@ -57,8 +75,8 @@ MarkersController.prototype.removeGroup = function(request, response){
 
 
 MarkersController.prototype.updateGroup = function(request, response){
-
-    console.log('request for group update id:' + request.param('id'));
+    var date = new Date();
+    console.log('request for group update id:' + request.param('id') + ' ' + date.toDateString() + ' ' + date.toTimeString());
     console.dir(request.params);
     MarkersGroup.findOneAndUpdate({id: request.param('id')}, { markers: request.param('markers') }, function(err, group){
         if(err){
@@ -73,7 +91,8 @@ MarkersController.prototype.updateGroup = function(request, response){
 
 };
 MarkersController.prototype.uploadGroups = function(request, response){
-    console.log('request for groups');
+    var date = new Date();
+    console.log('request for groups '  + date.toDateString() + ' ' + date.toTimeString());
     MarkersGroup.find({}, function(err, groups){
         if(err){
             console.error(err);
@@ -101,7 +120,8 @@ MarkersController.prototype.uploadGroups = function(request, response){
 };
 
 MarkersController.prototype.uploadSpecifiedGroup = function (request, response){
-    console.log('request specified group');
+    var date = new Date();
+    console.log('request specified group '  + date.toDateString() + ' ' + date.toTimeString());
 
     var markerGroup = {};
     date = (new Date()).toTimeString();
@@ -137,8 +157,9 @@ MarkersController.prototype.uploadSpecifiedGroup = function (request, response){
 
 
 MarkersController.prototype.uploadMarkers = function(request, response){
-
-    console.log('request for ungrouped markers');
+    var date = new Date();
+    
+    console.log('request for ungrouped markers '  + date.toDateString() + ' ' + date.toTimeString());
 
     Marker.find({}, function(err, markers){
         if(err){
@@ -165,37 +186,61 @@ MarkersController.prototype.updateMarker = function(request, response){
 
 MarkersController.prototype.saveMarker = function(request, response){
 
-//    console.dir(request.param('longitude'));
-//    response.send('ok');
-//    return;
-    console.log('request save marker');
-    var newMarker = new Marker({
-        name : request.param('name'),
-        description : request.param('description'),
-        id : undefined,
-        groupId: request.param('groupId'),
-        location: request.param('location'),
-        user:'anonymous'
-    });
-    newMarker.id = newMarker._id;
-    newMarker.save(function(err, marker){
-        if(err){
-            console.error(err);
-            response.status(500);
-            response.send('Did not saved');
-            return false;
-        }
-        if(marker){
-//            marker.id = marker._id;
-            response.send(marker);
-        }
+    var newMarker,
+        date = new Date();
 
-    });
+
+    if(request.param('id')){ // ================ update existing marker ===================
+
+        console.log('request update marker ' + request.param('id') + ' ' + date.toDateString() + ' ' + date.toTimeString());
+        console.log(request.param('description'));
+
+        Marker.findOneAndUpdate({id : request.param('id')}, { $set: {description : request.param('description'), groupId : request.param('groupId')}}, function(err, marker){
+            if(err){
+                console.error(err);
+                response.status(500);
+                response.send('Did not updated');
+                return false;
+            }
+            if(marker){
+                console.dir(marker);
+                response.send(marker);
+            }
+        });
+    }
+
+    else{ // ================ save new marker ==============================
+
+        console.log('request save marker '  + date.toDateString() + ' ' + date.toTimeString());
+        newMarker = new Marker({
+            name : request.param('name'),
+            description : request.param('description'),
+            id : undefined,
+            groupId: request.param('groupId'),
+            location: request.param('location'),
+            user:'anonymous'
+        });
+        newMarker.id = newMarker._id;
+        newMarker.save(function(err, marker){
+            if(err){
+                console.error(err);
+                response.status(500);
+                response.send('Did not saved');
+                return false;
+            }
+            if(marker){
+//            marker.id = marker._id;
+                response.send(marker);
+            }
+
+        });
+    }
 
 };
 
 MarkersController.prototype.removeMarker = function(request, response){
-    console.log('Request remove marker ' + request.param('id'));
+    var date = new Date();
+    console.log('Request remove marker ' + request.param('id') + ' ' + date.toDateString() + ' ' + date.toTimeString());
     Marker.remove({id : request.param('id')}, function(err, doc){
         console.log(err + '     ' + doc);
     });
