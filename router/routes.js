@@ -17,6 +17,6 @@ module.exports = function router(app){
 
     app.delete('/group/:id', markersController.removeGroup);
 
-    app.delete('/marker/:id', markersController.removeMarker);
+    app.delete('/markers/:id', markersController.removeMarker);
 
 };

@@ -361,7 +361,7 @@
     MainController.prototype.removeMarker = function(markerId){
         $.ajax({
             type:'DELETE',
-            url:'/marker/' + markerId
+            url:'/markers/' + markerId
         }).done(function(data){});
     };
 
@@ -680,8 +680,12 @@
             ungroupedMarkers = $('.ungrouped-markers');
 
         $('#save-group').on('click', function(){
-//            $(this).closest('.slide').addClass('hidden');
             self.saveGroup();
+        });
+
+        $('.reset-group-input').on('click', function(event){
+            $('#markers').find('.active-marker-form').removeClass('.active-marker-form').addClass('hidden');
+
         });
 
         optionsBlock.on('click', '.save-marker', function(){
@@ -709,9 +713,14 @@
                     myLatitudeLongitude,
                     marker;
                 if(self.activeMarker.groupIndex == 'none'){
-                    self.markers[markerIndex].description = markerForm.find('.marker-description')[0].value;
-                    self.markers[markerIndex].groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].options[groupItemsSelect[0].selectedIndex].value : idContainer[0].group.id;
-                    if(self.markers[markerIndex].groupId != 'none'){
+                    self.markers[markerIndex].description = markerForm.find('.marker-description').val();
+                    self.markers[markerIndex].groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].value : idContainer[0].group.id;
+                    if(self.markers[markerIndex].groupId !== 'none'){
+                        if(eventTarget.parent().find('#marker-group-items').length > 0){
+
+                            $('.ungrouped-markers').find('.marker').eq(self.activeMarker.index).remove();
+
+                        }
                         for(var i = 0; i < self.groups.length; i++){
                             if(self.groups[i].id == self.markers[markerIndex].groupId){
 
@@ -784,8 +793,8 @@
                     return;
                 }
 
-                newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].options[groupItemsSelect[0].selectedIndex].value : idContainer[0].group.id;
-                if(!newMarker.groupId == 'none'){
+                newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].value : idContainer[0].group.id;
+                if(newMarker.groupId !== 'none'){
                     $(this).closest('.panel')[0].polyCreated = false;
                 }
 
