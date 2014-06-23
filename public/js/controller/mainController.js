@@ -29,7 +29,7 @@
         this.groupItemTemplate = $('.group-item').eq(0).detach();
         this.activeHulls = [];
         this.hullPalette = ['#c925ff', '#4267e9', '#01c9e2','#8c0000', '#777873', '#fec619', '#ff7f00', '#222222', '#ff4d4d', '#59b200', '#c925ff', '#4267e9', '#01c9e2','#8c0000', '#777873', '#fec619', '#ff7f00', '#222222', '#ff4d4d', '#59b200'];
-        console.dir(this.activeHulls);
+//        console.dir(this.activeHulls);
 
 
         this.initializeMap();
@@ -37,7 +37,143 @@
         this.downloadGroups();
 
         this.initializeEventsAndActions();
-//        this.renderUngroupedMarkers();
+    };
+
+
+    //===================================================================
+
+// isLeft(): tests if a point is Left|On|Right of an infinite line.
+//    Input:  three points P0, P1, and P2
+//    Return: >0 for P2 left of the line through P0 and P1
+//            =0 for P2 on the line
+//            <0 for P2 right of the line
+
+    function sortPointX(a, b) {
+        return a.lng() - b.lng();
+    }
+    function sortPointY(a, b) {
+        return a.lat() - b.lat();
+    }
+
+    function isLeft(P0, P1, P2) {
+        return (P1.lng() - P0.lng()) * (P2.lat() - P0.lat()) - (P2.lng() - P0.lng()) * (P1.lat() - P0.lat());
+    }
+
+
+    MainController.prototype.calculateConvexHull = function(P, n, H){
+        // Copyright 2001, softSurfer (www.softsurfer.com)
+// This code may be freely used and modified for any purpose
+// providing that this copyright notice is included with it.
+// SoftSurfer makes no warranty for this code, and cannot be held
+// liable for any real or imagined damage resulting from its use.
+// Users of this code must verify correctness for their application.
+// http://softsurfer.com/Archive/algorithm_0203/algorithm_0203.htm
+// Assume that a class is already given for the object:
+//    Point with coordinates {float x, y;}
+//===================================================================
+
+// chainHull_2D(): A.M. Andrew's monotone chain 2D convex hull algorithm
+// http://softsurfer.com/Archive/algorithm_0109/algorithm_0109.htm
+//
+//     Input:  P[] = an array of 2D points
+//                   presorted by increasing x- and y-coordinates
+//             n = the number of points in P[]
+//     Output: H[] = an array of the convex hull vertices (max is n)
+//     Return: the number of points in H[]
+
+
+
+            // the output array H[] will be used as the stack
+            var bot = 0,
+                top = (-1); // indices for bottom and top of the stack
+            var i; // array scan index
+            // Get the indices of points with min x-coord and min|max y-coord
+            var minmin = 0,
+                minmax;
+
+            var xmin = P[0].lng();
+            for (i = 1; i < n; i++) {
+                if (P[i].lng() != xmin) {
+                    break;
+                }
+            }
+
+            minmax = i - 1;
+            if (minmax == n - 1) { // degenerate case: all x-coords == xmin
+                H[++top] = P[minmin];
+                if (P[minmax].lat() != P[minmin].lat()) // a nontrivial segment
+                    H[++top] = P[minmax];
+                H[++top] = P[minmin]; // add polygon endpoint
+                return top + 1;
+            }
+
+            // Get the indices of points with max x-coord and min|max y-coord
+            var maxmin, maxmax = n - 1;
+            var xmax = P[n - 1].lng();
+            for (i = n - 2; i >= 0; i--) {
+                if (P[i].lng() != xmax) {
+                    break;
+                }
+            }
+            maxmin = i + 1;
+
+            // Compute the lower hull on the stack H
+            H[++top] = P[minmin]; // push minmin point onto stack
+            i = minmax;
+            while (++i <= maxmin) {
+                // the lower line joins P[minmin] with P[maxmin]
+                if (isLeft(P[minmin], P[maxmin], P[i]) >= 0 && i < maxmin) {
+                    continue; // ignore P[i] above or on the lower line
+                }
+
+                while (top > 0) { // there are at least 2 points on the stack
+                    // test if P[i] is left of the line at the stack top
+                    if (isLeft(H[top - 1], H[top], P[i]) > 0) {
+                        break; // P[i] is a new hull vertex
+                    }
+                    else {
+                        top--; // pop top point off stack
+                    }
+                }
+
+                H[++top] = P[i]; // push P[i] onto stack
+            }
+
+            // Next, compute the upper hull on the stack H above the bottom hull
+            if (maxmax != maxmin) { // if distinct xmax points
+                H[++top] = P[maxmax]; // push maxmax point onto stack
+            }
+
+            bot = top; // the bottom point of the upper hull stack
+            i = maxmin;
+            while (--i >= minmax) {
+                // the upper line joins P[maxmax] with P[minmax]
+                if (isLeft(P[maxmax], P[minmax], P[i]) >= 0 && i > minmax) {
+                    continue; // ignore P[i] below or on the upper line
+                }
+
+                while (top > bot) { // at least 2 points on the upper stack
+                    // test if P[i] is left of the line at the stack top
+                    if (isLeft(H[top - 1], H[top], P[i]) > 0) {
+                        break;  // P[i] is a new hull vertex
+                    }
+                    else {
+                        top--; // pop top point off stack
+                    }
+                }
+
+                if (P[i].lng() == H[0].lng() && P[i].lat() == H[0].lat()) {
+                    return top + 1; // special case (mgomes)
+                }
+
+                H[++top] = P[i]; // push P[i] onto stack
+            }
+
+            if (minmax != minmin) {
+                H[++top] = P[minmin]; // push joining endpoint onto stack
+            }
+
+            return top + 1;
 
     };
 
@@ -204,7 +340,7 @@
                     data: dataSend
                 })
                     .done(function(data) {
-                        console.dir(data);
+//                        console.dir(data);
                         self.renderGroups();
                     })
                     .fail(function(err){
@@ -263,7 +399,7 @@
                 }
 
                 var groupElement;
-                console.dir(data);
+//                console.dir(data);
                 newGroup.id = data.id;
                 newGroup.markers = [];
                 self.groups.push(newGroup);
@@ -378,9 +514,10 @@
         })
             .done(function(data) {
                 if(self.activeMarker.onFlight){
-                    console.dir(data);
+//                    console.dir(data);
                     if(self.activeMarker.groupIndex != 'none'){
                         self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].description = data.description;
+                        self.createPolygon(self.groups[self.activeMarker.groupIndex]);
                         self.renderMarkersInGroup(markerContainer, self.activeMarker.groupIndex);
                     }
                     else{
@@ -457,8 +594,8 @@
 
                         });
                     }
-                    console.dir(newMarker);
-                    console.dir(self.googleMarkers);
+//                    console.dir(newMarker);
+//                    console.dir(self.googleMarkers);
                 }
             })
             .fail(function(err){
@@ -512,7 +649,7 @@
             this.groupItemParent.append(groupItemElement);
 
         }
-        console.dir(this.groups);
+//        console.dir(this.groups);
         $('.collapse').collapse();
     };
 
@@ -580,7 +717,7 @@
             markerTemplateInsert[0].marker = this.groups[groupIndex].markers[j];
             markerTemplateInsert[0].groupIndex = groupIndex;
             markerTemplateInsert[0].index = j;
-            console.dir(markerTemplateInsert);
+//            console.dir(markerTemplateInsert);
             markerTemplateParent.append(markerTemplateInsert);
         }
 
@@ -627,7 +764,7 @@
         coords.sort(sortPointY);
         coords.sort(sortPointX);
 
-        countPoints = chainHull_2D(coords, coords.length, hull);
+        countPoints = this.calculateConvexHull(coords, coords.length, hull);
         group.hull = [];
         for(var i = 0; i < hull.length; i++){
             group.hull.push(hull[i]);
@@ -646,7 +783,6 @@
                 for( var i = 0; i < this.groups[groupIndex].googleMarkers.length; i++){
                     gatheredMarkers.push(this.groups[groupIndex].markers[i]);
                     googleMarkers.push(this.groups[groupIndex].googleMarkers[i]);
-//                    gatheredMarkers.push(this.groups[groupIndex].googleMarkers[i]);
                 }
                 activeHulls.push(this.groups[groupIndex].groupMapHull);
             }
@@ -684,7 +820,8 @@
         });
 
         $('.reset-group-input').on('click', function(event){
-            $('#markers').find('.active-marker-form').removeClass('.active-marker-form').addClass('hidden');
+            $('.active-marker-form').removeClass('active-marker-form').addClass('hidden').width();
+            $('.glyphicon-minus-sign').removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign').width();
 
         });
 
@@ -759,6 +896,8 @@
                                 self.markers.splice(markerIndex, 1);
                                 self.googleMarkers.splice(markerIndex, 1);
                                 self.renderGroups();
+                                self.groups[i].polyCreated = false;
+                                break;
                             }
                         }
                         self.saveMarker(self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index], markerContainer);
@@ -795,10 +934,17 @@
 
                 newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].value : idContainer[0].group.id;
                 if(newMarker.groupId !== 'none'){
-                    $(this).closest('.panel')[0].polyCreated = false;
-                }
+                    for(var i = 0; i < self.groups.length; i++){
 
-                self.saveMarker(newMarker, markerContainer);
+                        if(self.groups[i].id == newMarker.groupId){
+                            self.groups[i].polyCreated = false;
+                            break;
+                        }
+
+                    }
+
+                }
+                self.saveMarker(newMarker, $('.panel-default').eq(i).find('.panel-body'));
 
             }
 
@@ -834,7 +980,16 @@
         markerGroups.on('click', '.remove-group-marker', function(){
             var marker = $(this).closest('.marker')[0].marker;
             self.removeGroupMarker(marker.groupId, marker.id, marker.index);
-            $(this).closest('.panel')[0].polyCreated = false;
+//            $(this).closest('.panel')[0].polyCreated = false;
+            for(var i = 0; i < self.groups.length; i++){
+
+                if(self.groups[i].id == marker.groupId){
+                    self.groups[i].polyCreated = false;
+                    break;
+                }
+
+            }
+
             $(this).closest('.marker').remove();
         });
 
@@ -927,7 +1082,8 @@
                 alert('For the hull of this group needed at least three markers!');
                 return;
             }
-            if(!$(this).closest('.panel')[0].polyCreated){
+//            if(!$(this).closest('.panel')[0].polyCreated){
+            if( ! self.groups[groupIndex].polyCreated){
                 if(self.groups[groupIndex].groupMapHull){
                     self.groups[groupIndex].groupMapHull.setMap(null);
                 }
@@ -947,7 +1103,7 @@
 //                alert(google.maps.geometry.poly.containsLocation(new google.maps.LatLng(self.groups[groupIndex].markers[0].location.latitude, self.groups[groupIndex].markers[0].location.longitude), self.groups[groupIndex].groupMapHull));
 //
 //                toggleBounce(self.groups[groupIndex].googleMarkers[0]);
-                $(this).closest('.panel')[0].polyCreated = true;
+                self.groups[groupIndex].polyCreated = true;
                 google.maps.event.addListener(self.groups[groupIndex].groupMapHull, 'click', function(){
                     alert('Hide hull before creating new marker in this place!');
                 });
