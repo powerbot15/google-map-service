@@ -13,6 +13,8 @@ module.exports = function router(app){
 
     app.post('/group', markersController.saveGroup);
 
+    app.post('/file', markersController.getFile);
+
     app.put('/group/:id', markersController.updateGroup);
 
     app.delete('/group/:id', markersController.removeGroup);

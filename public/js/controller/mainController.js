@@ -29,6 +29,7 @@
         this.groupItemTemplate = $('.group-item').eq(0).detach();
         this.activeHulls = [];
         this.hullPalette = ['#c925ff', '#4267e9', '#01c9e2','#8c0000', '#777873', '#fec619', '#ff7f00', '#222222', '#ff4d4d', '#59b200', '#c925ff', '#4267e9', '#01c9e2','#8c0000', '#777873', '#fec619', '#ff7f00', '#222222', '#ff4d4d', '#59b200'];
+//        this.commonHull = {};
 //        console.dir(this.activeHulls);
 
 

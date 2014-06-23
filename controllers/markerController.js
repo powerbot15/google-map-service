@@ -2,12 +2,40 @@
 
 var MarkersGroup = require('../models/group-model'),
     Marker = require('../models/marker-model.js'),
+    formidable = require('formidable'),
+    fs = require('fs'),
     date;
 
 var MarkersController = function(){
     console.log('new controller created');
 };
 
+MarkersController.prototype.getFile = function(request, responce){
+
+    var form = new formidable.IncomingForm();
+
+    form.parse(request, function(err, fields, files) {
+        console.dir(files['file0']);
+        fs.readFile(files['file0'].path, function(err, data){
+            if(err){
+                console.dir(err);
+                responce.send('error');
+                return;
+            }
+            fs.writeFile('public/img/uploaded/' + files['file0'].name, data, function(err){
+                if(err){
+                    console.dir(err);
+                    responce.send('fail');
+                }
+                responce.send({src : '/img/uploaded/' + files['file0'].name});
+            })
+        });
+
+    });
+
+
+
+};
 
 MarkersController.prototype.saveGroup = function(request, response){
     var date = new Date();
@@ -73,7 +101,6 @@ MarkersController.prototype.removeGroup = function(request, response){
     });
 };
 
-
 MarkersController.prototype.updateGroup = function(request, response){
     var date = new Date();
     console.log('request for group update id:' + request.param('id') + ' ' + date.toDateString() + ' ' + date.toTimeString());
@@ -90,6 +117,7 @@ MarkersController.prototype.updateGroup = function(request, response){
     });
 
 };
+
 MarkersController.prototype.uploadGroups = function(request, response){
     var date = new Date();
     console.log('request for groups '  + date.toDateString() + ' ' + date.toTimeString());
@@ -158,7 +186,7 @@ MarkersController.prototype.uploadSpecifiedGroup = function (request, response){
 
 MarkersController.prototype.uploadMarkers = function(request, response){
     var date = new Date();
-    
+
     console.log('request for ungrouped markers '  + date.toDateString() + ' ' + date.toTimeString());
 
     Marker.find({}, function(err, markers){
