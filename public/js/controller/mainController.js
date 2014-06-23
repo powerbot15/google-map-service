@@ -502,7 +502,7 @@
         }).done(function(data){});
     };
 
-    MainController.prototype.saveMarker = function(marker, markerContainer){
+    MainController.prototype.saveMarker = function(marker, markerContainer, formData){
 
         var newMarker = marker,
             self = this;
@@ -511,9 +511,15 @@
         $.ajax({
             type: "POST",
             url: "/marker",
-            data: newMarker
+//            data: newMarker
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false
+
         })
             .done(function(data) {
+//                return;
                 if(self.activeMarker.onFlight){
 //                    console.dir(data);
                     if(self.activeMarker.groupIndex != 'none'){
@@ -915,6 +921,8 @@
 
             }
             else{
+                var formData = new FormData();
+
                 newMarker.description = markerForm.find('.marker-description')[0].value;
 
                 if(!newMarker.description){
@@ -922,9 +930,11 @@
                     alert('Input marker description!');
                     return;
                 }
+                formData.append('description', newMarker.description);
 
                 newMarker.location.latitude = markerForm.find('.marker-latitude')[0].value;
                 newMarker.location.longitude = markerForm.find('.marker-longitude')[0].value;
+
 
                 if(!newMarker.location.latitude || !newMarker.location.longitude){
                     markerForm.find('.marker-latitude').parent().addClass('has-error');
@@ -933,7 +943,11 @@
                     return;
                 }
 
+                formData.append('latitude', newMarker.location.latitude);
+                formData.append('longitude', newMarker.location.longitude);
+
                 newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].value : idContainer[0].group.id;
+                formData.append('groupId', newMarker.groupId);
                 if(newMarker.groupId !== 'none'){
                     for(var i = 0; i < self.groups.length; i++){
 
@@ -945,7 +959,7 @@
                     }
 
                 }
-                self.saveMarker(newMarker, $('.panel-default').eq(i).find('.panel-body'));
+                self.saveMarker(newMarker, $('.panel-default').eq(i).find('.panel-body'), formData);
 
             }
 

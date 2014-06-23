@@ -67,6 +67,11 @@
                                         <label for="marker-longitude" >Marker longitude: </label>
                                         <input type="text" class="form-control marker-longitude" placeholder="Click on the map to accept" disabled="disabled">
                                     </div>
+                                    <div class="form-group">
+                                        <label for="marker-image" >Marker image: </label>
+                                        <input type="file" class="form-control marker-image" placeholder="Click on the map to accept">
+                                    </div>
+
                                     <span class="btn btn-success form-control save-marker">Save</span>
                                     <!--</div>-->
                                 </div>
@@ -131,6 +136,7 @@
                     </div>
                     <div class="slide hidden">
                         <!--<div>-->
+                        <form enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="marker-description" >Marker description: </label>
                             <input type="text" class="form-control marker-description" placeholder="Enter marker description">
@@ -144,6 +150,10 @@
                             <input type="text" class="form-control marker-longitude" placeholder="Click on the map to accept" disabled="disabled">
                         </div>
                         <div class="form-group">
+                            <label for="marker-image" >Marker image: </label>
+                            <input type="file" class="form-control marker-image" placeholder="Click on the map to accept">
+                        </div>
+                        <div class="form-group">
                             <label for="marker-group-items" >Marker group: </label>
                             <select name="groups" class="form-control" id="marker-group-items">
                                 <option class="group-item-default" value="none">none</option>
@@ -151,6 +161,7 @@
                             </select>
                         </div>
                         <span class="btn btn-success form-control save-marker">Save</span>
+                        </form>
                         <!--</div>-->
                     </div>
                 </div>
@@ -171,7 +182,6 @@
 </div>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=geometry&sensor=false"></script>
 <script src="js/lib/bootstrap/dist/js/bootstrap.js"></script>
-<script src="js/controller/convexHull.js"></script>
 <script src="js/controller/mainController.js"></script>
 </body>
 

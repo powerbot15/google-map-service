@@ -217,6 +217,30 @@ MarkersController.prototype.saveMarker = function(request, response){
     var newMarker,
         date = new Date();
 
+    var form = new formidable.IncomingForm();
+
+
+    form.parse(request, function(err, fields, files) {
+        console.dir(files['file0']);
+        console.dir(fields);
+//        response.send('ok');
+
+//        fs.readFile(files['file0'].path, function(err, data){
+//            if(err){
+//                console.dir(err);
+//                responce.send('error');
+//                return;
+//            }
+//            fs.writeFile('public/img/uploaded/' + files['file0'].name, data, function(err){
+//                if(err){
+//                    console.dir(err);
+//                    responce.send('fail');
+//                }
+//                responce.send({src : '/img/uploaded/' + files['file0'].name});
+//            })
+//        });
+
+
 
     if(request.param('id')){ // ================ update existing marker ===================
 
@@ -241,11 +265,14 @@ MarkersController.prototype.saveMarker = function(request, response){
 
         console.log('request save marker '  + date.toDateString() + ' ' + date.toTimeString());
         newMarker = new Marker({
-            name : request.param('name'),
-            description : request.param('description'),
+            name : fields['name'],
+            description : fields.description,
             id : undefined,
-            groupId: request.param('groupId'),
-            location: request.param('location'),
+            groupId: fields.groupId,
+            location: {
+                latitude : fields.latitude,
+                longitude : fields.longitude
+            },
             user:'anonymous'
         });
         newMarker.id = newMarker._id;
@@ -263,6 +290,52 @@ MarkersController.prototype.saveMarker = function(request, response){
 
         });
     }
+    });
+//    if(request.param('id')){ // ================ update existing marker ===================
+//
+//        console.log('request update marker ' + request.param('id') + ' ' + date.toDateString() + ' ' + date.toTimeString());
+//        console.log(request.param('description'));
+//
+//        Marker.findOneAndUpdate({id : request.param('id')}, { $set: {description : request.param('description'), groupId : request.param('groupId')}}, function(err, marker){
+//            if(err){
+//                console.error(err);
+//                response.status(500);
+//                response.send('Did not updated');
+//                return false;
+//            }
+//            if(marker){
+//                console.dir(marker);
+//                response.send(marker);
+//            }
+//        });
+//    }
+//
+//    else{ // ================ save new marker ==============================
+//
+//        console.log('request save marker '  + date.toDateString() + ' ' + date.toTimeString());
+//        newMarker = new Marker({
+//            name : request.param('name'),
+//            description : request.param('description'),
+//            id : undefined,
+//            groupId: request.param('groupId'),
+//            location: request.param('location'),
+//            user:'anonymous'
+//        });
+//        newMarker.id = newMarker._id;
+//        newMarker.save(function(err, marker){
+//            if(err){
+//                console.error(err);
+//                response.status(500);
+//                response.send('Did not saved');
+//                return false;
+//            }
+//            if(marker){
+////            marker.id = marker._id;
+//                response.send(marker);
+//            }
+//
+//        });
+//    }
 
 };
 
