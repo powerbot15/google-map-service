@@ -69,7 +69,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="marker-image" >Marker image: </label>
-                                        <input type="file" class="form-control marker-image" placeholder="Click on the map to accept">
+                                        <input type="file" class="form-control marker-image" accept="image">
                                     </div>
 
                                     <span class="btn btn-success form-control save-marker">Save</span>
@@ -151,7 +151,7 @@
                         </div>
                         <div class="form-group">
                             <label for="marker-image" >Marker image: </label>
-                            <input type="file" class="form-control marker-image" placeholder="Click on the map to accept">
+                            <input type="file" class="form-control marker-image" accept="image" placeholder="Click on the map to accept">
                         </div>
                         <div class="form-group">
                             <label for="marker-group-items" >Marker group: </label>
@@ -178,6 +178,7 @@
     <div class="info-window-template">
         <h3 class="info-group-name"></h3>
         <h4 class="info-marker-description"></h4>
+        <img src="img/no-image.jpg" alt="marker-image" class="marker-image hidden"/>
     </div>
 </div>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=geometry&sensor=false"></script>

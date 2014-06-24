@@ -8,7 +8,8 @@ var mongoose = require('mongoose'),
                 latitude : Number,
                 longitude : Number
             },
-            user:String
+            user:String,
+            imageUrl: String
         }
     );
 module.exports = mongoose.model('Marker', MarkerSchema);

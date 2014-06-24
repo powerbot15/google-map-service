@@ -19,6 +19,7 @@
         };
         this.infoWindow = {};
         this.infoWindowContent = $('.info-window-template').eq(0).detach();
+        this.infoWindowContent.find('img').removeClass('hidden');
         this.ungroupedMarkersParent = $('.ungrouped-markers').eq(0);
         this.ungroupedMarkerTemplate = this.ungroupedMarkersParent.find('.marker').eq(0);
         this.ungroupedMarkerTemplate.remove();
@@ -285,6 +286,7 @@
                     that.createPolygon(that.groups[j]);
                     that.activeHulls[j] = false;
                 }
+                console.dir(receivedMarkers);
                 that.renderGroups();
                 that.renderGoogleMarkersInGroups();
                 that.renderUngroupedMarkers();
@@ -315,6 +317,7 @@
 
                 self.infoWindowContent.find('.info-group-name').eq(0).html('Ungrouped marker');
                 self.infoWindowContent.find('.info-marker-description').html(self.markers[this.index].description);
+                self.infoWindowContent.find('img').get(0).src = self.markers[this.index].imageUrl ? self.markers[this.index].imageUrl : 'img/no-image.jpg';
                 self.infoWindow.setContent(self.infoWindowContent.html());
                 self.infoWindow.open(self.map, this);
                 self.map.panTo(this.position);
@@ -524,6 +527,7 @@
 //                    console.dir(data);
                     if(self.activeMarker.groupIndex != 'none'){
                         self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].description = data.description;
+                        self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].imageUrl = data.imageUrl;
                         self.createPolygon(self.groups[self.activeMarker.groupIndex]);
                         self.renderMarkersInGroup(markerContainer, self.activeMarker.groupIndex);
                     }
@@ -560,6 +564,7 @@
 
                                     self.infoWindowContent.find('.info-group-name').eq(0).html(self.groups[this.groupIndex].name);
                                     self.infoWindowContent.find('.info-marker-description').html(self.groups[this.groupIndex].markers[this.index].description);
+                                    self.infoWindowContent.find('img').get(0).src = self.groups[this.groupIndex].markers[this.index].imageUrl ? self.groups[this.groupIndex].markers[this.index].imageUrl : 'img/no-image.jpg';
                                     self.infoWindow.setContent(self.infoWindowContent.html());
                                     self.infoWindow.open(self.map, this);
                                     self.map.panTo(this.position);
@@ -594,6 +599,7 @@
                         google.maps.event.addListener(marker, 'click', function() {
 
                             self.infoWindowContent.find('.info-group-name').eq(0).html('Ungrouped marker');
+                            self.infoWindowContent.find('.info-marker-description').html(self.markers[this.index].description);
                             self.infoWindowContent.find('.info-marker-description').html(self.markers[this.index].description);
                             self.infoWindow.setContent(self.infoWindowContent.html());
                             self.infoWindow.open(self.map, this);
@@ -698,6 +704,7 @@
 
                     self.infoWindowContent.find('.info-group-name').eq(0).html(self.groups[this.groupIndex].name);
                     self.infoWindowContent.find('.info-marker-description').html(self.groups[this.groupIndex].markers[this.index].description);
+                    self.infoWindowContent.find('img').get(0).src = self.groups[this.groupIndex].markers[this.index].imageUrl ? self.groups[this.groupIndex].markers[this.index].imageUrl : 'img/no-image.jpg';
                     self.infoWindow.setContent(self.infoWindowContent.html());
                     self.infoWindow.open(self.map, this);
                     self.map.panTo(this.position);
@@ -844,7 +851,9 @@
                 markerForm = $('.active-marker-form'),
                 idContainer = eventTarget.closest('.panel-default'),
                 groupItemsSelect = markerForm.find('#marker-group-items'),
-                markerContainer = idContainer.find('.panel-body').eq(0);
+                markerContainer = idContainer.find('.panel-body').eq(0),
+                formData = new FormData(),
+                file = idContainer.find('.marker-image').get(0).files[0];
 
 
             markerForm.find('.marker-description').parent().removeClass('has-error');
@@ -907,21 +916,24 @@
                                 break;
                             }
                         }
-                        self.saveMarker(self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index], markerContainer);
+                        appendMarkerToFormData(formData, self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index], file);
+                        self.saveMarker(self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index], markerContainer, formData );
                     }
                     else{
+                        appendMarkerToFormData(formData, self.markers[markerIndex], file);
                         self.saveMarker(self.markers[markerIndex], markerContainer);
                     }
 
                 }
                 else{
                     self.groups[groupIndex].markers[markerIndex].description = markerForm.find('.marker-description')[0].value;
-                    self.saveMarker(self.groups[groupIndex].markers[markerIndex], markerContainer);
+                    appendMarkerToFormData(formData, self.groups[groupIndex].markers[markerIndex], file);
+                    self.saveMarker(self.groups[groupIndex].markers[markerIndex], markerContainer, formData);
                 }
 
             }
             else{
-                var formData = new FormData();
+
 
                 newMarker.description = markerForm.find('.marker-description')[0].value;
 
@@ -930,7 +942,7 @@
                     alert('Input marker description!');
                     return;
                 }
-                formData.append('description', newMarker.description);
+//                formData.append('description', newMarker.description);
 
                 newMarker.location.latitude = markerForm.find('.marker-latitude')[0].value;
                 newMarker.location.longitude = markerForm.find('.marker-longitude')[0].value;
@@ -943,11 +955,13 @@
                     return;
                 }
 
-                formData.append('latitude', newMarker.location.latitude);
-                formData.append('longitude', newMarker.location.longitude);
+//                formData.append('latitude', newMarker.location.latitude);
+//                formData.append('longitude', newMarker.location.longitude);
 
                 newMarker.groupId = groupItemsSelect.length > 0 ? groupItemsSelect[0].value : idContainer[0].group.id;
-                formData.append('groupId', newMarker.groupId);
+
+//                formData.append('groupId', newMarker.groupId);
+
                 if(newMarker.groupId !== 'none'){
                     for(var i = 0; i < self.groups.length; i++){
 
@@ -959,6 +973,7 @@
                     }
 
                 }
+                appendMarkerToFormData(formData, newMarker, file);
                 self.saveMarker(newMarker, $('.panel-default').eq(i).find('.panel-body'), formData);
 
             }
@@ -1249,6 +1264,16 @@
             } else {
                 marker.setAnimation(google.maps.Animation.BOUNCE);
             }
+        }
+
+        function appendMarkerToFormData(formData, marker, file){
+            formData.append('description', marker.description);
+            formData.append('id', marker.id || 'none');
+            formData.append('groupId', marker.groupId);
+            formData.append('imageUrl', marker.imageUrl);
+            formData.append('latitude', marker.location.latitude);
+            formData.append('longitude', marker.location.longitude);
+            formData.append('image', file ? file : 'none');
         }
     };
 

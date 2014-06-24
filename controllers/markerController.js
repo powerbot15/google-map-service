@@ -4,6 +4,7 @@ var MarkersGroup = require('../models/group-model'),
     Marker = require('../models/marker-model.js'),
     formidable = require('formidable'),
     fs = require('fs'),
+    gm = require('gm'),
     date;
 
 var MarkersController = function(){
@@ -221,33 +222,31 @@ MarkersController.prototype.saveMarker = function(request, response){
 
 
     form.parse(request, function(err, fields, files) {
-        console.dir(files['file0']);
-        console.dir(fields);
-//        response.send('ok');
-
-//        fs.readFile(files['file0'].path, function(err, data){
-//            if(err){
-//                console.dir(err);
-//                responce.send('error');
-//                return;
-//            }
-//            fs.writeFile('public/img/uploaded/' + files['file0'].name, data, function(err){
-//                if(err){
-//                    console.dir(err);
-//                    responce.send('fail');
-//                }
-//                responce.send({src : '/img/uploaded/' + files['file0'].name});
-//            })
-//        });
+//        console.dir(files['image']);
+        fs.readFile(files['image'].path, function(err, data){
+            if(err){
+                console.dir(err);
+                return;
+            }
+            fs.writeFile('public/img/uploaded/' + files['image'].name, data, function(err){
+                if(err){
+                    console.dir(err);
+                }
+            })
+        });
 
 
 
-    if(request.param('id')){ // ================ update existing marker ===================
+    if(fields['id'] && fields['id'] != 'none'){ // ================ update existing marker ===================
 
-        console.log('request update marker ' + request.param('id') + ' ' + date.toDateString() + ' ' + date.toTimeString());
-        console.log(request.param('description'));
+        console.log('request update marker ' + fields['id'] + ' ' + date.toDateString() + ' ' + date.toTimeString());
 
-        Marker.findOneAndUpdate({id : request.param('id')}, { $set: {description : request.param('description'), groupId : request.param('groupId')}}, function(err, marker){
+        Marker.findOneAndUpdate({id : fields['id']}, {
+            $set: {
+                description : fields['description'],
+                groupId : fields['groupId'],
+                imageUrl : '/img/uploaded/' + files['image'].name
+            }}, function(err, marker){
             if(err){
                 console.error(err);
                 response.status(500);
@@ -255,7 +254,7 @@ MarkersController.prototype.saveMarker = function(request, response){
                 return false;
             }
             if(marker){
-                console.dir(marker);
+//                console.dir(marker);
                 response.send(marker);
             }
         });
@@ -273,7 +272,8 @@ MarkersController.prototype.saveMarker = function(request, response){
                 latitude : fields.latitude,
                 longitude : fields.longitude
             },
-            user:'anonymous'
+            user:'anonymous',
+            imageUrl: '/img/uploaded/' + files['image'].name
         });
         newMarker.id = newMarker._id;
         newMarker.save(function(err, marker){
@@ -285,6 +285,7 @@ MarkersController.prototype.saveMarker = function(request, response){
             }
             if(marker){
 //            marker.id = marker._id;
+                console.dir(marker);
                 response.send(marker);
             }
 

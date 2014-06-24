@@ -177,3 +177,8 @@ body{
 .panel-title{
     padding-right:50px;
 }
+.marker-image{
+    width:250px;
+    display: block;
+    margin: auto;
+}
