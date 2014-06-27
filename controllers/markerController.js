@@ -82,16 +82,31 @@ MarkersController.prototype.saveGroup = function(request, response){
 };
 
 MarkersController.prototype.removeGroup = function(request, response){
-    var date = new Date();
+    var date = new Date(),
+        groupIdToRemove = request.param('id');
     console.log('request remove group '  + date.toDateString() + ' ' + date.toTimeString());
-    MarkersGroup.remove({id : request.param('id')}, function(err){
+    MarkersGroup.remove({id : groupIdToRemove}, function(err){
         if(!err){
-            Marker.remove({groupId : request.param('id')}, function(err){
-                if(!err) {
-                    response.send({answer: 'ok'});
+            Marker.find({groupId : groupIdToRemove}, function(err, markers){
+                if(err){
+                    response.send('no markers in deleted group');
                 }
-                else{
-                    response.send({answer: 'failremovemarkers'});
+                if(markers){
+                    console.dir(markers);
+                    for(var i = 0; i < markers.length; i++){
+                        if(fs.existsSync('public' + markers[i].imageUrl)){
+                            fs.unlinkSync('public' + markers[i].imageUrl);
+                        }
+                    }
+                    Marker.remove({groupId : request.param('id')}, function(err){
+                        if(!err) {
+                            response.send({answer: 'ok'});
+                        }
+                        else{
+                            response.send({answer: 'failremovemarkers'});
+                        }
+                    });
+
                 }
             });
 
@@ -136,16 +151,6 @@ MarkersController.prototype.uploadGroups = function(request, response){
             response.send([]);
         }
     });
-    function findCollectionMarkers(collection){
-        Marker.find({groupId : collection._id}, function(err, markers){
-            if(err){
-                return false;
-            }
-            collection.markers = markers;
-            console.dir(markers);
-
-        })
-    }
 };
 
 MarkersController.prototype.uploadSpecifiedGroup = function (request, response){
@@ -216,48 +221,82 @@ MarkersController.prototype.updateMarker = function(request, response){
 MarkersController.prototype.saveMarker = function(request, response){
 
     var newMarker,
-        date = new Date();
+        date = new Date(),
+        markerIsNew,
+        updateOptions;
 
     var form = new formidable.IncomingForm();
 
 
     form.parse(request, function(err, fields, files) {
 //        console.dir(files['image']);
-        fs.readFile(files['image'].path, function(err, data){
-            if(err){
-                console.dir(err);
-                return;
+        markerIsNew = fields['id'] && fields['id'] != 'none' ? false : true;
+        if(files['image']){
+            if(!markerIsNew){
+                Marker.findOne({id : fields['id']}, function(err, marker){
+                    if(err){
+                        console.dir(err);
+                    }
+                    if(marker){
+                        fs.exists('public' + marker.imageUrl, function(exists){
+                            exists ? fs.unlink('public' + marker.imageUrl) : false;
+                        });
+                    }
+                });
             }
-            fs.writeFile('public/img/uploaded/' + files['image'].name, data, function(err){
+
+            fs.readFile(files['image'].path, function(err, data){
                 if(err){
                     console.dir(err);
+                    return;
                 }
-            })
-        });
+                if(!fs.existsSync('public/img/uploaded')){
+                    fs.mkdirSync('public/img/uploaded', 777);
+                }
+                fs.writeFile('public/img/uploaded/' + files['image'].name, data, function(err){
+                    if(err){
+                        console.dir(err);
+                    }
+                })
+            });
+        }
+
 
 
 
     if(fields['id'] && fields['id'] != 'none'){ // ================ update existing marker ===================
 
         console.log('request update marker ' + fields['id'] + ' ' + date.toDateString() + ' ' + date.toTimeString());
-
-        Marker.findOneAndUpdate({id : fields['id']}, {
-            $set: {
+        if(files['image']){
+            updateOptions = {
                 description : fields['description'],
                 groupId : fields['groupId'],
                 imageUrl : '/img/uploaded/' + files['image'].name
-            }}, function(err, marker){
-            if(err){
-                console.error(err);
-                response.status(500);
-                response.send('Did not updated');
-                return false;
             }
-            if(marker){
-//                console.dir(marker);
-                response.send(marker);
+        }
+        else{
+            updateOptions = {
+                description : fields['description'],
+                groupId : fields['groupId']
             }
-        });
+
+        }
+
+        Marker.findOneAndUpdate({id : fields['id']}, {
+                $set: updateOptions
+            },
+            function(err, marker){
+                if(err){
+                    console.error(err);
+                    response.status(500);
+                    response.send('Did not updated');
+                    return false;
+                }
+                if(marker){
+    //                console.dir(marker);
+                    response.send(marker);
+                }
+            });
     }
 
     else{ // ================ save new marker ==============================
@@ -273,7 +312,7 @@ MarkersController.prototype.saveMarker = function(request, response){
                 longitude : fields.longitude
             },
             user:'anonymous',
-            imageUrl: '/img/uploaded/' + files['image'].name
+            imageUrl: files['image'].name ? '/img/uploaded/' + files['image'].name : undefined
         });
         newMarker.id = newMarker._id;
         newMarker.save(function(err, marker){

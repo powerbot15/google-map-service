@@ -230,8 +230,8 @@
 
         this.infoWindow = new google.maps.InfoWindow({
             content: '',
-            maxWidth: 300,
-            maxHeight:400
+            maxWidth: 250,
+            maxHeight:300
         });
 
     };
@@ -981,6 +981,7 @@
             markerForm.find('.marker-description')[0].value = '';
             markerForm.find('.marker-latitude')[0].value = '';
             markerForm.find('.marker-longitude')[0].value = '';
+            markerForm.find('.marker-image')[0].value = '';
 
 //            $(this).closest('.slide');//.removeClass('active-marker-form');//.addClass('hidden');
         });
@@ -1084,6 +1085,7 @@
                 activeForm.find('.marker-description').get(0).value = self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].description;
                 activeForm.find('.marker-latitude').get(0).value = self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].location.latitude;
                 activeForm.find('.marker-longitude').get(0).value = self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].location.longitude;
+                activeForm.find('.marker-image').get(0).value = '';
             }
 
 
@@ -1192,7 +1194,7 @@
                 activeForm.find('.marker-description').get(0).value = self.markers[self.activeMarker.index].description;
                 activeForm.find('.marker-latitude').get(0).value = self.markers[self.activeMarker.index].location.latitude;
                 activeForm.find('.marker-longitude').get(0).value = self.markers[self.activeMarker.index].location.longitude;
-
+                activeForm.find('.marker-image').get(0).value = '';
 
 
         });
