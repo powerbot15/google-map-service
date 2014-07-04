@@ -244,7 +244,9 @@ MarkersController.prototype.saveMarker = function(request, response){
                     }
                 });
             }
-
+            if(!fs.existsSync('public/img/uploaded')){
+                fs.mkdirSync('public/img/uploaded', 777);
+            }
             gm(files['image'].path).resize(250).write('public/img/uploaded/' + files['image'].name, function(err){
                 console.dir(err);
             });
