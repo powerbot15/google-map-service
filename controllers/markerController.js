@@ -245,20 +245,27 @@ MarkersController.prototype.saveMarker = function(request, response){
                 });
             }
 
-            fs.readFile(files['image'].path, function(err, data){
-                if(err){
-                    console.dir(err);
-                    return;
-                }
-                if(!fs.existsSync('public/img/uploaded')){
-                    fs.mkdirSync('public/img/uploaded', 777);
-                }
-                fs.writeFile('public/img/uploaded/' + files['image'].name, data, function(err){
-                    if(err){
-                        console.dir(err);
-                    }
-                })
+            gm(files['image'].path).resize(250).write('public/img/uploaded/' + files['image'].name, function(err){
+                console.dir(err);
             });
+
+//            fs.readFile(files['image'].path, function(err, data){
+//                if(err){
+//                    console.dir(err);
+//                    return;
+//                }
+//                if(!fs.existsSync('public/img/uploaded')){
+//                    fs.mkdirSync('public/img/uploaded', 777);
+//                }
+//                fs.writeFile('public/img/uploaded/' + files['image'].name, data, function(err){
+//                    if(err){
+//                        console.dir(err);
+//                    }
+//                    else{
+//
+//                    }
+//                })
+//            });
         }
 
 
@@ -382,8 +389,19 @@ MarkersController.prototype.saveMarker = function(request, response){
 MarkersController.prototype.removeMarker = function(request, response){
     var date = new Date();
     console.log('Request remove marker ' + request.param('id') + ' ' + date.toDateString() + ' ' + date.toTimeString());
-    Marker.remove({id : request.param('id')}, function(err, doc){
-        console.log(err + '     ' + doc);
+    Marker.find({id : request.param('id')}, function(err, doc){
+
+        if(doc){
+            console.dir(doc);
+            if(fs.existsSync('public' + doc[0].imageUrl)){
+                console.log('exists');
+                fs.unlinkSync('public' + doc[0].imageUrl);
+            }
+
+            Marker.remove({id : request.param('id')}, function(err, doc){
+                console.log(err + '     ' + doc);
+            });
+        }
     });
     response.send('ok');
 };

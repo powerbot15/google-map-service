@@ -222,8 +222,8 @@
             }
 
             if(!self.activeMarker.onFlight && $('.active-marker-form').length > 0){
-                $('.active-marker-form .marker-latitude').val(event.latLng.k);
-                $('.active-marker-form .marker-longitude').val(event.latLng.A);
+                $('.active-marker-form .marker-latitude').val(event.latLng.lat());
+                $('.active-marker-form .marker-longitude').val(event.latLng.lng());
             }
             self.infoWindow.close();
         });
