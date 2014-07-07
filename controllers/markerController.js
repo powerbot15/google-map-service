@@ -407,4 +407,12 @@ MarkersController.prototype.removeMarker = function(request, response){
     });
     response.send('ok');
 };
+
+
+MarkersController.prototype.getImageExtension = function(fileName){
+
+    return fileName.match(/\.\w+$/)[0];
+
+};
+
 module.exports = MarkersController;

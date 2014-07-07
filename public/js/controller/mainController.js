@@ -39,6 +39,7 @@
         this.downloadGroups();
 
         this.initializeEventsAndActions();
+
     };
 
 
