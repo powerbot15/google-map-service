@@ -8,6 +8,11 @@ var MarkersGroup = require('../models/group-model'),
     date;
 
 var MarkersController = function(){
+
+    if(!fs.existsSync('public/img/uploaded')){
+        fs.mkdirSync('public/img/uploaded', 777);
+    }
+
     console.log('new controller created');
 };
 
@@ -222,10 +227,11 @@ MarkersController.prototype.saveMarker = function(request, response){
 
     var newMarker,
         date = new Date(),
+        self = this,
         markerIsNew,
-        updateOptions;
+        updateOptions,
 
-    var form = new formidable.IncomingForm();
+        form = new formidable.IncomingForm();
 
 
     form.parse(request, function(err, fields, files) {
@@ -244,30 +250,9 @@ MarkersController.prototype.saveMarker = function(request, response){
                     }
                 });
             }
-            if(!fs.existsSync('public/img/uploaded')){
-                fs.mkdirSync('public/img/uploaded', 777);
-            }
             gm(files['image'].path).resize(250).write('public/img/uploaded/' + files['image'].name, function(err){
                 console.dir(err);
             });
-
-//            fs.readFile(files['image'].path, function(err, data){
-//                if(err){
-//                    console.dir(err);
-//                    return;
-//                }
-//                if(!fs.existsSync('public/img/uploaded')){
-//                    fs.mkdirSync('public/img/uploaded', 777);
-//                }
-//                fs.writeFile('public/img/uploaded/' + files['image'].name, data, function(err){
-//                    if(err){
-//                        console.dir(err);
-//                    }
-//                    else{
-//
-//                    }
-//                })
-//            });
         }
 
 
@@ -280,8 +265,11 @@ MarkersController.prototype.saveMarker = function(request, response){
             updateOptions = {
                 description : fields['description'],
                 groupId : fields['groupId'],
-                imageUrl : '/img/uploaded/' + files['image'].name
-            }
+                imageUrl : '/img/uploaded/' + fields['id'] + MarkersController.prototype.getImageExtension(files['image'].name)
+            };
+            fs.rename('public/img/uploaded/' + files['image'].name, 'public/' + updateOptions.imageUrl, function(err, success){
+                console.dir(err);
+            });
         }
         else{
             updateOptions = {
@@ -310,6 +298,7 @@ MarkersController.prototype.saveMarker = function(request, response){
 
     else{ // ================ save new marker ==============================
 
+
         console.log('request save marker '  + date.toDateString() + ' ' + date.toTimeString());
         newMarker = new Marker({
             name : fields['name'],
@@ -320,10 +309,27 @@ MarkersController.prototype.saveMarker = function(request, response){
                 latitude : fields.latitude,
                 longitude : fields.longitude
             },
-            user:'anonymous',
-            imageUrl: files['image'].name ? '/img/uploaded/' + files['image'].name : undefined
+            user:'anonymous'
+
         });
         newMarker.id = newMarker._id;
+
+        if(files['image'].name){
+            gm(files['image'].path).resize(250).write('public/img/uploaded/' + newMarker.id + MarkersController.prototype.getImageExtension(files['image'].name), function(err){
+                console.dir(err);
+            });
+
+//            fs.rename('public/img/uploaded/' + files['image'].name, 'public/img/uploaded/' + newMarker.id + MarkersController.prototype.getImageExtension(files['image'].name), function(err, success){
+//                console.dir(err);
+//                console.dir(success);
+//            });
+            newMarker.imageUrl =  '/img/uploaded/' + newMarker.id + MarkersController.prototype.getImageExtension(files['image'].name);
+        }
+        else{
+            newMarker.imageUrl = undefined;
+        }
+
+
         newMarker.save(function(err, marker){
             if(err){
                 console.error(err);
