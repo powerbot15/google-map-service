@@ -12,36 +12,55 @@ var MarkersController = function(){
     if(!fs.existsSync('public/img/uploaded')){
         fs.mkdirSync('public/img/uploaded', 777);
     }
+//    for(var i = 0; i < 20000; i++){
+//        var newMarker = new Marker({
+//            name : i,
+//            description : i,
+//            id : undefined,
+//            groupId: 'none',
+//            location: {
+//                latitude : Math.random() * 100 - 50,
+//                longitude : Math.random() * 100 - 50
+//            },
+//            user:'anonymous'
+//
+//        });
+//        newMarker.id = newMarker._id;
+//        newMarker.save(function(err, marker){
+//            console.log(marker.id);
+//        });
+//
+//    }
 
     console.log('new controller created');
 };
 
-MarkersController.prototype.getFile = function(request, responce){
-
-    var form = new formidable.IncomingForm();
-
-    form.parse(request, function(err, fields, files) {
-        console.dir(files['file0']);
-        fs.readFile(files['file0'].path, function(err, data){
-            if(err){
-                console.dir(err);
-                responce.send('error');
-                return;
-            }
-            fs.writeFile('public/img/uploaded/' + files['file0'].name, data, function(err){
-                if(err){
-                    console.dir(err);
-                    responce.send('fail');
-                }
-                responce.send({src : '/img/uploaded/' + files['file0'].name});
-            })
-        });
-
-    });
-
-
-
-};
+//MarkersController.prototype.getFile = function(request, responce){
+//
+//    var form = new formidable.IncomingForm();
+//
+//    form.parse(request, function(err, fields, files) {
+//        console.dir(files['file0']);
+//        fs.readFile(files['file0'].path, function(err, data){
+//            if(err){
+//                console.dir(err);
+//                responce.send('error');
+//                return;
+//            }
+//            fs.writeFile('public/img/uploaded/' + files['file0'].name, data, function(err){
+//                if(err){
+//                    console.dir(err);
+//                    responce.send('fail');
+//                }
+//                responce.send({src : '/img/uploaded/' + files['file0'].name});
+//            })
+//        });
+//
+//    });
+//
+//
+//
+//};
 
 MarkersController.prototype.saveGroup = function(request, response){
     var date = new Date();
@@ -237,8 +256,7 @@ MarkersController.prototype.saveMarker = function(request, response){
     form.parse(request, function(err, fields, files) {
 //        console.dir(files['image']);
         markerIsNew = fields['id'] && fields['id'] != 'none' ? false : true;
-        if(files['image']){
-            if(!markerIsNew){
+        if(files['image'] && !markerIsNew){
                 Marker.findOne({id : fields['id']}, function(err, marker){
                     if(err){
                         console.dir(err);
@@ -249,26 +267,31 @@ MarkersController.prototype.saveMarker = function(request, response){
                         });
                     }
                 });
-            }
-            gm(files['image'].path).resize(250).write('public/img/uploaded/' + files['image'].name, function(err){
-                console.dir(err);
-            });
+                gm(files['image'].path).resize(250).write('public/img/uploaded/' + files['image'].name, function(err){
+                    if(err){console.dir(err);}
+
+                    console.log('gm write');
+                });
         }
 
 
 
 
-    if(fields['id'] && fields['id'] != 'none'){ // ================ update existing marker ===================
+    if(!markerIsNew){ // ================ update existing marker ===================
 
         console.log('request update marker ' + fields['id'] + ' ' + date.toDateString() + ' ' + date.toTimeString());
         if(files['image']){
+            var fName = files['image'].name;
             updateOptions = {
                 description : fields['description'],
                 groupId : fields['groupId'],
                 imageUrl : '/img/uploaded/' + fields['id'] + MarkersController.prototype.getImageExtension(files['image'].name)
             };
-            fs.rename('public/img/uploaded/' + files['image'].name, 'public/' + updateOptions.imageUrl, function(err, success){
-                console.dir(err);
+            fs.rename('public/img/uploaded/' + fName, 'public' + updateOptions.imageUrl, function(err, success){
+                if(err){console.error(err);}
+                fs.unlink('public/img/uploaded/' + fName, function(err){
+                    if(err){console.error(err)}
+                });
             });
         }
         else{
@@ -299,7 +322,9 @@ MarkersController.prototype.saveMarker = function(request, response){
     else{ // ================ save new marker ==============================
 
 
-        console.log('request save marker '  + date.toDateString() + ' ' + date.toTimeString());
+        console.log('request save new marker '  + date.toDateString() + ' ' + date.toTimeString());
+//        console.log(files['image'].path);
+
         newMarker = new Marker({
             name : fields['name'],
             description : fields.description,
@@ -314,7 +339,7 @@ MarkersController.prototype.saveMarker = function(request, response){
         });
         newMarker.id = newMarker._id;
 
-        if(files['image'].name){
+        if(files['image']){
             gm(files['image'].path).resize(250).write('public/img/uploaded/' + newMarker.id + MarkersController.prototype.getImageExtension(files['image'].name), function(err){
                 console.dir(err);
             });

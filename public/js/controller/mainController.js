@@ -407,6 +407,7 @@
 //                console.dir(data);
                 newGroup.id = data.id;
                 newGroup.markers = [];
+                newGroup.googleMarkers = [];
                 self.groups.push(newGroup);
                 groupElement = self.groupTemplate.eq(0).clone();
                 groupElement.find('.panel-title>span').eq(0).html(newGroup.name);
@@ -601,7 +602,7 @@
 
                             self.infoWindowContent.find('.info-group-name').eq(0).html('Ungrouped marker');
                             self.infoWindowContent.find('.info-marker-description').html(self.markers[this.index].description);
-                            self.infoWindowContent.find('.info-marker-description').html(self.markers[this.index].description);
+                            self.infoWindowContent.find('.marker-image').get(0).src = self.markers[this.index].imageUrl;
                             self.infoWindow.setContent(self.infoWindowContent.html());
                             self.infoWindow.open(self.map, this);
                             self.map.panTo(this.position);
@@ -906,7 +907,6 @@
                                     self.map.panTo(this.position);
 
                                 });
-
                                 self.groups[i].googleMarkers.push(
                                     marker
                                 );
@@ -1074,6 +1074,8 @@
                 groupIndex = jqThis.closest('.marker')[0].groupIndex,
                 activeForm;
 
+            $('.btn-slide').find('.glyphicon').removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign')
+            $('.slide').addClass('hidden').removeClass('active-marker-form');
             panel.find('.slide').removeClass('hidden').removeClass('active-marker-form').addClass('active-marker-form');
             buttonUpDown.removeClass('glyphicon-plus-sign');
             buttonUpDown.addClass('glyphicon-minus-sign');
@@ -1086,6 +1088,7 @@
                 activeForm.find('.marker-description').get(0).value = self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].description;
                 activeForm.find('.marker-latitude').get(0).value = self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].location.latitude;
                 activeForm.find('.marker-longitude').get(0).value = self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].location.longitude;
+                activeForm.find('.marker-image-preview').removeClass('hidden').get(0).src = self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].imageUrl ? self.groups[self.activeMarker.groupIndex].markers[self.activeMarker.index].imageUrl : 'img/no-image.jpg';
                 activeForm.find('.marker-image').get(0).value = '';
             }
 
@@ -1195,6 +1198,7 @@
                 activeForm.find('.marker-description').get(0).value = self.markers[self.activeMarker.index].description;
                 activeForm.find('.marker-latitude').get(0).value = self.markers[self.activeMarker.index].location.latitude;
                 activeForm.find('.marker-longitude').get(0).value = self.markers[self.activeMarker.index].location.longitude;
+                activeForm.find('.marker-image-preview').removeClass('hidden').get(0).src = self.markers[self.activeMarker.index].imageUrl ? self.markers[self.activeMarker.index].imageUrl : 'img/no-image.jpg';
                 activeForm.find('.marker-image').get(0).value = '';
 
 
@@ -1239,6 +1243,9 @@
         });
         $('body').on('click', '.btn-slide', function(event){
             var slideContent = $(this).parent().find('.slide');
+            $('.btn-slide').find('.glyphicon').removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign')
+            $('.slide').addClass('hidden').removeClass('active-marker-form');
+
             if(slideContent.hasClass('hidden')){
                 slideContent.removeClass('hidden').addClass('active-marker-form');
                 $(this).find('.glyphicon').removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');

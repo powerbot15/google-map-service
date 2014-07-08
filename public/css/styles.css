@@ -182,3 +182,7 @@ body{
     display: block;
     margin: auto;
 }
+.marker-image-preview{
+    width:100px;
+    border: 1px solid gray;
+}
